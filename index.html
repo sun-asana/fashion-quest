@@ -1,44 +1,79 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="fq-overlay" class="hidden">
         <div id="fq-modal">
-            <h2 id="modal-title">Задание</h2>
+            <h2 id="modal-title"></h2>
             <div id="modal-content"></div>
-            <button id="modal-btn">ОК</button>
+            <div id="modal-footer">
+                 <button id="modal-btn">ОК</button>
+            </div>
         </div>
     </div>
 
     <script src="engine.js"></script>
     <script>
-        // Функция, которую мы будем вызывать из Genially
-        function openTask(question, correctAnswer, reward) {
-            const overlay = document.getElementById('fq-overlay');
-            const content = document.getElementById('modal-content');
-            const title = document.getElementById('modal-title');
-            
-            title.innerText = "Вопрос на засыпку";
-            content.innerHTML = `
-                <p>${question}</p>
-                <input type="text" id="user-answer" placeholder="Введите ответ...">
-            `;
-            
+        const overlay = document.getElementById('fq-overlay');
+        const content = document.getElementById('modal-content');
+        const title = document.getElementById('modal-title');
+        const btn = document.getElementById('modal-btn');
+
+        // ФУНКЦИЯ ЗАДАНИЯ
+        window.openTask = function(question, correctAnswer, reward) {
+            title.innerText = "Fashion Вопрос";
+            content.innerHTML = `<p>${question}</p><input type="text" id="user-answer" placeholder="Ваш ответ...">`;
             overlay.classList.remove('hidden');
             
-            document.getElementById('modal-btn').onclick = function() {
-                const userVal = document.getElementById('user-answer').value;
-                if(userVal.toLowerCase().trim() === correctAnswer.toLowerCase().trim()) {
+            btn.onclick = function() {
+                const val = document.getElementById('user-answer').value;
+                if(val.toLowerCase().trim() === correctAnswer.toLowerCase().trim()) {
                     window.FQ.addMoney(reward);
-                    alert("Верно! + " + reward + " монет");
-                    overlay.classList.add('hidden');
-                    // Тут можно добавить команду Genially для перехода к магазину
+                    alert("Верно! Начислено " + reward);
+                    // После верного ответа — сразу открываем магазин!
+                    window.openShop(); 
                 } else {
-                    alert("Неверно, попробуй еще раз!");
+                    alert("Упс! Попробуй еще раз.");
                 }
             };
+        };
+
+        // ФУНКЦИЯ МАГАЗИНА
+        window.openShop = function() {
+            title.innerText = "Гардероб";
+            // Пример товаров (потом вынесем в конфиг)
+            const items = [
+                {id: 'shoes_1', name: 'Кеды', price: 100},
+                {id: 'top_1', name: 'Худи', price: 200}
+            ];
+            
+            let html = `<p>Твой баланс: <b>${window.FQ.money}</b></p><div class="shop-grid">`;
+            items.forEach(item => {
+                const isBought = window.FQ.inventory.includes(item.id);
+                html += `
+                    <div class="shop-item">
+                        <p>${item.name}</p>
+                        <p>${item.price} 💰</p>
+                        <button onclick="buy('${item.id}', ${item.price})" ${isBought ? 'disabled' : ''}>
+                            ${isBought ? 'Куплено' : 'Купить'}
+                        </button>
+                    </div>`;
+            });
+            html += `</div>`;
+            content.innerHTML = html;
+            btn.innerText = "Закрыть";
+            btn.onclick = () => overlay.classList.add('hidden');
+        };
+
+        function buy(id, price) {
+            if(window.FQ.buyItem(id, price)) {
+                window.openShop(); // Перерисовать магазин
+            } else {
+                alert("Недостаточно монет!");
+            }
         }
     </script>
 </body>
