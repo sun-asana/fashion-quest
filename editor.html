@@ -1,1 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Fashion Quest Editor</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #fce4ec; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        input, textarea { width: 100%; margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        code { display: block; background: #333; color: #fff; padding: 15px; border-radius: 8px; margin-top: 20px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>👗 Конструктор заданий</h2>
+        <label>Вопрос:</label>
+        <input type="text" id="q" placeholder="Например: Кто создал маленькое черное платье?">
+        <label>Правильный ответ:</label>
+        <input type="text" id="a" placeholder="Шанель">
+        <label>Награда (монеты):</label>
+        <input type="number" id="m" value="100">
+        <button onclick="generate()" style="width:100%; padding:10px; background:#ff4081; color:white; border:none; border-radius:8px; cursor:pointer;">Сгенерировать код для Genially</button>
+        
+        <h3>Скопируй этот код в Genially (Insert -> Others):</h3>
+        <code id="out">Здесь появится ваш код...</code>
+    </div>
 
+    <script>
+        function generate() {
+            const q = document.getElementById('q').value;
+            const a = document.getElementById('a').value;
+            const m = document.getElementById('m').value;
+            const url = "https://sun-asana.github.io/fashion-quest/index.html";
+            
+            const code = `<iframe src="${url}" style="width: 100%; height: 100%; border: none; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;" id="fq-engine"></iframe>\n\n<button style="background: #ff4081; color: white; border: none; padding: 15px 30px; border-radius: 50px; cursor: pointer;" onclick="const e = document.getElementById('fq-engine'); e.style.pointerEvents = 'auto'; e.contentWindow.openTask('${q}', '${a}', ${m})"> Начать задание </button>`;
+            
+            document.getElementById('out').innerText = code;
+        }
+    </script>
+</body>
+</html>
