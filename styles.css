@@ -40,3 +40,36 @@ button:hover { background: #e91e63; }
 .shop-item {
     border: 1px solid #eee; padding: 10px; border-radius: 10px;
 }
+/* Виджет баланса */
+.fq-balance-widget {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+    z-index: 9998; /* Чуть ниже модального окна */
+    border: 2px solid #ffd700;
+}
+
+.fq-coin {
+    width: 25px;
+    height: 25px;
+    background-image: url('https://cdn-icons-png.flaticon.com/512/217/217853.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: 10px;
+    animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+}
