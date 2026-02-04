@@ -4,25 +4,39 @@
     <meta charset="UTF-8">
     <title>Fashion Quest Editor</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #fce4ec; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        input, textarea { width: 100%; margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
-        code { display: block; background: #333; color: #fff; padding: 15px; border-radius: 8px; margin-top: 20px; white-space: pre-wrap; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #fce4ec; color: #333; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
+        h2 { color: #ff4081; text-align: center; }
+        label { font-weight: bold; display: block; margin-top: 15px; }
+        input { width: 100%; margin: 8px 0; padding: 12px; border: 2px solid #fce4ec; border-radius: 10px; box-sizing: border-box; }
+        input:focus { border-color: #ff4081; outline: none; }
+        #gen-btn { width: 100%; padding: 15px; background: #ff4081; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; margin-top: 20px; }
+        #gen-btn:hover { background: #e91e63; transform: translateY(-2px); }
+        .output-container { position: relative; margin-top: 25px; }
+        code { display: block; background: #2d3436; color: #fab1a0; padding: 20px; border-radius: 12px; font-size: 13px; white-space: pre-wrap; word-break: break-all; }
+        #copy-btn { position: absolute; top: 10px; right: 10px; background: #555; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        #copy-btn:hover { background: #777; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>👗 Конструктор заданий</h2>
-        <label>Вопрос:</label>
-        <input type="text" id="q" placeholder="Например: Кто создал маленькое черное платье?">
+        <h2>👗 Fashion Quest: Конструктор</h2>
+        
+        <label>Вопрос для ученика:</label>
+        <input type="text" id="q" placeholder="Например: Кто автор стиля 'New Look'?">
+        
         <label>Правильный ответ:</label>
-        <input type="text" id="a" placeholder="Шанель">
+        <input type="text" id="a" placeholder="Диор">
+        
         <label>Награда (монеты):</label>
         <input type="number" id="m" value="100">
-        <button onclick="generate()" style="width:100%; padding:10px; background:#ff4081; color:white; border:none; border-radius:8px; cursor:pointer;">Сгенерировать код для Genially</button>
+
+        <button id="gen-btn" onclick="generate()">Сгенерировать код</button>
         
-        <h3>Скопируй этот код в Genially (Insert -> Others):</h3>
-        <code id="out">Здесь появится ваш код...</code>
+        <div class="output-container">
+            <button id="copy-btn" onclick="copyCode()">Копировать</button>
+            <code id="out">Тут появится код для Genially...</code>
+        </div>
     </div>
 
     <script>
@@ -32,9 +46,23 @@
             const m = document.getElementById('m').value;
             const url = "https://sun-asana.github.io/fashion-quest/index.html";
             
-            const code = `<iframe src="${url}" style="width: 100%; height: 100%; border: none; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;" id="fq-engine"></iframe>\n\n<button style="background: #ff4081; color: white; border: none; padding: 15px 30px; border-radius: 50px; cursor: pointer;" onclick="const e = document.getElementById('fq-engine'); e.style.pointerEvents = 'auto'; e.contentWindow.openTask('${q}', '${a}', ${m})"> Начать задание </button>`;
+            // Используем postMessage для надежности передачи данных в iframe
+            const code = `<div style="width: 100%; height: 100%;"><iframe src="${url}" style="width: 100%; height: 100%; border: none; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;" id="fq-engine"></iframe><button style="background: #ff4081; color: white; border: none; padding: 15px 30px; border-radius: 50px; font-family: sans-serif; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255,64,129,0.4); pointer-events: auto;" onclick="const e=document.getElementById('fq-engine'); e.style.pointerEvents='auto'; e.contentWindow.postMessage({type:'openTask', q:'${q}', a:'${a}', m:${m}}, '*')"> ✨ Начать задание ✨ </button></div>`;
             
             document.getElementById('out').innerText = code;
+        }
+
+        function copyCode() {
+            const text = document.getElementById('out').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copy-btn');
+                btn.innerText = 'Скопировано!';
+                btn.style.background = '#00b894';
+                setTimeout(() => { 
+                    btn.innerText = 'Копировать'; 
+                    btn.style.background = '#555';
+                }, 2000);
+            });
         }
     </script>
 </body>
