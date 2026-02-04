@@ -9,19 +9,18 @@
         <div id="fq-modal">
             <h2 id="modal-title"></h2>
             <div id="modal-content"></div>
-            <div id="modal-footer">
-                 <button id="modal-btn">ОК</button>
-            </div>
+            <button id="modal-btn">Ответить</button>
         </div>
     </div>
 
     <script src="engine.js"></script>
     <script>
-        // СЛУШАТЕЛЬ КОМАНД ИЗ GENIALLY
+        // Ждем команды от кнопки из Genially
         window.addEventListener('message', function(event) {
+            console.log("Получено сообщение:", event.data); // Для отладки
             const data = event.data;
             if (data.type === 'openTask') {
-                openTask(data.q, data.a, data.m);
+                window.openTask(data.q, data.a, data.m);
             }
         });
 
@@ -32,56 +31,25 @@
 
         window.openTask = function(question, correctAnswer, reward) {
             title.innerText = "Fashion Вопрос";
-            content.innerHTML = `<p>${question}</p><input type="text" id="user-answer" placeholder="Ваш ответ...">`;
+            content.innerHTML = `
+                <p style="margin-bottom:15px;">${question}</p>
+                <input type="text" id="user-answer" style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd;" placeholder="Ваш ответ...">
+            `;
             overlay.classList.remove('hidden');
             
-            btn.innerText = "Ответить";
             btn.onclick = function() {
                 const val = document.getElementById('user-answer').value;
                 if(val && val.toLowerCase().trim() === correctAnswer.toLowerCase().trim()) {
                     window.FQ.addMoney(reward);
-                    window.openShop(); 
+                    alert("Верно! + " + reward + " монет");
+                    // Скрываем окно и возвращаем управление Genially
+                    overlay.classList.add('hidden');
+                    window.parent.postMessage({type: 'close'}, '*');
                 } else {
-                    alert("Упс! Неверно.");
+                    alert("Упс! Неверно. Попробуй еще раз.");
                 }
             };
         };
-
-        window.openShop = function() {
-            title.innerText = "Гардероб";
-            const items = [
-                {id: 'shoes_1', name: 'Кеды', price: 100},
-                {id: 'top_1', name: 'Худи', price: 200}
-            ];
-            
-            let html = `<p>Твой баланс: <b>${window.FQ.money}</b> 💰</p><div class="shop-grid">`;
-            items.forEach(item => {
-                const isBought = window.FQ.inventory.includes(item.id);
-                html += `
-                    <div class="shop-item" style="border: 1px solid #eee; margin: 5px; padding: 10px;">
-                        <span>${item.name} (${item.price})</span><br>
-                        <button onclick="buy('${item.id}', ${item.price})" ${isBought ? 'disabled' : ''} style="width: auto; margin-top:5px;">
-                            ${isBought ? 'Есть' : 'Купить'}
-                        </button>
-                    </div>`;
-            });
-            html += `</div>`;
-            content.innerHTML = html;
-            btn.innerText = "Закрыть";
-            btn.onclick = () => {
-                overlay.classList.add('hidden');
-                // Возвращаем кликабельность слайду Genially
-                window.parent.postMessage('close', '*'); 
-            };
-        };
-
-        function buy(id, price) {
-            if(window.FQ.buyItem(id, price)) {
-                window.openShop();
-            } else {
-                alert("Не хватает монет!");
-            }
-        }
     </script>
 </body>
 </html>
