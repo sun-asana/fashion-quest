@@ -4,39 +4,69 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Добавим немного стилей для расположения куклы */
         .game-container {
             display: flex;
             align-items: flex-start;
             gap: 20px;
             justify-content: center;
+            padding: 10px;
         }
         #character-preview {
             flex-shrink: 0;
-            background: #f9f9f9;
-            border-radius: 15px;
+            background: #ffffff;
+            border-radius: 20px;
             overflow: hidden;
-            border: 2px dashed #ff4081;
+            border: 3px solid #ff4081;
+            position: relative;
+            width: 220px;
+            height: 380px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
         .shop-content {
             flex-grow: 1;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+        /* Эффект сияния при покупке */
+        @keyframes shine {
+            0% { filter: brightness(1) drop-shadow(0 0 0px gold); }
+            50% { filter: brightness(1.4) drop-shadow(0 0 20px gold); }
+            100% { filter: brightness(1) drop-shadow(0 0 0px gold); }
+        }
+        .shining {
+            animation: shine 0.8s ease-in-out;
+        }
+        .shop-item {
+            background: #fff0f5;
+            margin-bottom: 8px;
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+        }
+        .shop-item:hover {
+            transform: scale(1.02);
+            background: #ffe4ee;
         }
     </style>
 </head>
 <body>
+    <audio id="sound-coin" src="https://www.soundjay.com/misc/sounds/coins-spilled-1.mp3"></audio>
+
     <div id="balance-container" class="fq-balance-widget">
         <div class="fq-coin"></div>
         <span id="balance-val">0</span>
     </div>
 
     <div id="fq-overlay" class="hidden">
-        <div id="fq-modal" style="max-width: 700px; width: 90%;">
-            <h2 id="modal-title"></h2>
+        <div id="fq-modal" style="max-width: 700px; width: 95%;">
+            <h2 id="modal-title" style="color: #ff4081; margin-top: 0;"></h2>
             
             <div class="game-container">
-                <div id="character-preview" style="position: relative; width: 200px; height: 350px;">
+                <div id="character-preview">
                     <img id="base-body" src="assets/body/girl.png" style="position: absolute; top:0; left:0; width: 100%; z-index: 1;">
-                    
                     <img id="layer-bottom" src="" style="position: absolute; top:0; left:0; width: 100%; z-index: 2;">
                     <img id="layer-top" src="" style="position: absolute; top:0; left:0; width: 100%; z-index: 3;">
                     <img id="layer-shoes" src="" style="position: absolute; top:0; left:0; width: 100%; z-index: 4;">
@@ -45,7 +75,7 @@
                 <div id="modal-content" class="shop-content"></div>
             </div>
 
-            <button id="modal-btn" style="margin-top: 20px;">Ответить</button>
+            <button id="modal-btn" style="margin-top: 15px; background: #ff4081; color: white; border: none; padding: 10px 25px; border-radius: 20px; cursor: pointer; font-weight: bold;">ОК</button>
         </div>
     </div>
 
@@ -55,6 +85,7 @@
         const content = document.getElementById('modal-content');
         const title = document.getElementById('modal-title');
         const btn = document.getElementById('modal-btn');
+        const coinSound = document.getElementById('sound-coin');
 
         function refreshBalance() {
             document.getElementById('balance-val').innerText = window.FQ.money;
@@ -62,7 +93,6 @@
 
         window.onload = refreshBalance;
 
-        // Слушаем команды из Genially
         window.addEventListener('message', function(event) {
             if (event.data.type === 'openTask') {
                 openTask(event.data.q, event.data.a, event.data.m);
@@ -71,9 +101,8 @@
 
         function openTask(question, correctAnswer, reward) {
             title.innerText = "Fashion Вопрос";
-            // При вопросе скрываем персонажа, чтобы не мешал
             document.getElementById('character-preview').style.display = 'none';
-            content.innerHTML = `<p>${question}</p><input type="text" id="user-answer" placeholder="Ваш ответ...">`;
+            content.innerHTML = `<p style="font-size: 1.2rem; color: #555;">${question}</p><input type="text" id="user-answer" style="width:100%; padding:12px; border: 2px solid #ff4081; border-radius: 10px;" placeholder="Твой ответ...">`;
             overlay.classList.remove('hidden');
             
             btn.onclick = function() {
@@ -81,7 +110,7 @@
                 if(val && val.toLowerCase().trim() === correctAnswer.toLowerCase().trim()) {
                     window.FQ.addMoney(reward);
                     refreshBalance();
-                    openShop(); // Переходим в магазин
+                    openShop();
                 } else {
                     alert("Упс! Попробуй еще раз.");
                 }
@@ -90,22 +119,22 @@
 
         function openShop() {
             title.innerText = "Твой гардероб";
-            // Показываем персонажа для примерки
             document.getElementById('character-preview').style.display = 'block';
             
-            // Список товаров (укажи тут свои ID из папок)
+            // ПРОВЕРЬ НАЗВАНИЯ ID - они должны совпадать с файлами на GitHub!
             const items = [
                 {id: 'top_1', name: 'Джинсовка', price: 100, type: 'top'},
-                {id: 'bottom_1', name: 'Джинсы', price: 150, type: 'bottom'}
+                {id: 'bottom_1', name: 'Джинсы', price: 150, type: 'bottom'},
+                {id: 'shoes_1', name: 'Кеды', price: 80, type: 'shoes'}
             ];
             
-            let html = `<div class="shop-grid">`;
+            let html = `<div>`;
             items.forEach(item => {
                 const isBought = window.FQ.inventory.includes(item.id);
                 html += `
-                    <div style="border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
-                        <span>${item.name} (${item.price} 💰)</span>
-                        <button onclick="tryOn('${item.id}', ${item.price}, '${item.type}')" style="width: auto; padding: 5px 10px;">
+                    <div class="shop-item">
+                        <span><b>${item.name}</b><br><small>${item.price} 💰</small></span>
+                        <button onclick="tryOn('${item.id}', ${item.price}, '${item.type}')" style="background: ${isBought ? '#4CAF50' : '#ff4081'}; color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer;">
                             ${isBought ? 'Надеть' : 'Купить'}
                         </button>
                     </div>`;
@@ -113,28 +142,32 @@
             html += `</div>`;
             
             content.innerHTML = html;
-            btn.innerText = "Завершить образ";
-            btn.onclick = () => {
-                overlay.classList.add('hidden');
-                window.parent.postMessage({type: 'close'}, '*');
-            };
+            btn.innerText = "Закрыть";
+            btn.onclick = () => overlay.classList.add('hidden');
         }
 
-        // Функция примерки/покупки
         function tryOn(id, price, type) {
+            const charPreview = document.getElementById('character-preview');
+            
             if (window.FQ.inventory.includes(id)) {
-                // Если уже куплено, просто надеваем
-                document.getElementById('layer-' + type).src = 'assets/clothes/' + type + '/' + id + '.png';
+                applyWear(id, type);
             } else {
-                // Если нет — покупаем
                 if (window.FQ.buyItem(id, price)) {
+                    coinSound.play();
                     refreshBalance();
-                    document.getElementById('layer-' + type).src = 'assets/clothes/' + type + '/' + id + '.png';
+                    applyWear(id, type);
                     openShop();
                 } else {
                     alert("Недостаточно монет!");
                 }
             }
+        }
+
+        function applyWear(id, type) {
+            const charPreview = document.getElementById('character-preview');
+            document.getElementById('layer-' + type).src = 'assets/clothes/' + type + '/' + id + '.png';
+            charPreview.classList.add('shining');
+            setTimeout(() => charPreview.classList.remove('shining'), 800);
         }
     </script>
 </body>
