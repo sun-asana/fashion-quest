@@ -126,14 +126,22 @@
         </div>
     </div>
 
-    <script src="engine.js"></script>
-    <script>
-        let timeLeft = 0;
+    let timeLeft = 0;
         let timerId = null;
         let currentReward = 0;
 
-        function refreshBalance() { document.getElementById('balance-val').innerText = window.FQ.money; }
-        window.onload = refreshBalance;
+        // Функция обновления баланса на экране
+        function refreshBalance() { 
+            document.getElementById('balance-val').innerText = window.FQ.money; 
+        }
+
+        window.onload = function() {
+            // Если хочешь, чтобы ПРИ КАЖДОМ открытии страницы в Genially баланс был 0:
+            window.FQ.money = 0; 
+            localStorage.setItem('fq_money', 0); // Обнуляем память браузера
+            
+            refreshBalance();
+        };
 
         window.addEventListener('message', function(event) {
             if (event.data.type === 'openTask') {
