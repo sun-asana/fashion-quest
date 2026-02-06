@@ -126,7 +126,9 @@
         </div>
     </div>
 
-    let timeLeft = 0;
+    <script src="engine.js"></script>
+    <script>
+        let timeLeft = 0;
         let timerId = null;
         let currentReward = 0;
 
@@ -136,10 +138,9 @@
         }
 
         window.onload = function() {
-            // Если хочешь, чтобы ПРИ КАЖДОМ открытии страницы в Genially баланс был 0:
+            // Обнуляем при каждой загрузке страницы
             window.FQ.money = 0; 
-            localStorage.setItem('fq_money', 0); // Обнуляем память браузера
-            
+            localStorage.setItem('fq_money', 0); 
             refreshBalance();
         };
 
@@ -208,7 +209,6 @@
             document.getElementById('timer-display').style.display = 'none';
             document.getElementById('character-preview').style.display = 'block';
             
-            // Названия для заголовка магазина
             const typeNames = {
                 'top': 'Верхняя одежда',
                 'bottom': 'Низ',
