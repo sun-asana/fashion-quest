@@ -138,9 +138,21 @@
         }
 
         window.onload = function() {
-            // Обнуляем при каждой загрузке страницы
+            // 1. Обнуляем деньги
             window.FQ.money = 0; 
             localStorage.setItem('fq_money', 0); 
+            
+            // 2. Полностью очищаем инвентарь (шкаф)
+            window.FQ.inventory = []; 
+            localStorage.setItem('fq_inventory', JSON.stringify([])); 
+            
+            // 3. Снимаем всю надетую одежду с куклы визуально
+            const layers = ['top', 'bottom', 'shoes', 'hat', 'acc'];
+            layers.forEach(layer => {
+                const img = document.getElementById('layer-' + layer);
+                if (img) img.src = "";
+            });
+
             refreshBalance();
         };
 
