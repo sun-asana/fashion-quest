@@ -156,15 +156,27 @@
             title.innerText = "Выбери награду";
             document.getElementById('character-preview').style.display = 'block'; // Показываем куклу
             
-            // ТВОЙ СПИСОК ВЕЩЕЙ (Добавляй новые сюда!)
-            const allItems = [
-                {id: 'top_1', name: 'Джинсовка', price: 100, type: 'top'},
-                {id: 'top_2', name: 'Розовое худи', price: 120, type: 'top'},
-                {id: 'bottom_1', name: 'Джинсы', price: 150, type: 'bottom'},
-                {id: 'bottom_2', name: 'Юбка', price: 130, type: 'bottom'},
-                {id: 'shoes_1', name: 'Кеды', price: 80, type: 'shoes'},
-                {id: 'acc_1', name: 'Стильные очки', price: 50, type: 'acc'}
-            ];
+            // ТВОЙ РАСШИРЕННЫЙ СПИСОК ВЕЩЕЙ
+        const allItems = [
+            // ВЕРХ (TOP)
+            {id: 'top_1', name: 'Джинсовка', price: 100, type: 'top'},
+            {id: 'top_2', name: 'Розовое худи', price: 120, type: 'top'},
+            {id: 'top_3', name: 'Стильная футболка', price: 80, type: 'top'},
+            
+            // НИЗ (BOTTOM)
+            {id: 'bottom_1', name: 'Джинсы', price: 150, type: 'bottom'},
+            {id: 'bottom_2', name: 'Юбка', price: 130, type: 'bottom'},
+            {id: 'bottom_3', name: 'Брюки чинос', price: 140, type: 'bottom'},
+            
+            // ОБУВЬ (SHOES)
+            {id: 'shoes_1', name: 'Кеды', price: 80, type: 'shoes'},
+            {id: 'shoes_2', name: 'Ботинки', price: 110, type: 'shoes'},
+            
+            // АКСЕССУАРЫ (ACC)
+            {id: 'acc_1', name: 'Стильные очки', price: 50, type: 'acc'},
+            {id: 'acc_2', name: 'Модная сумка', price: 90, type: 'acc'},
+            {id: 'acc_3', name: 'Шляпа', price: 70, type: 'acc'}
+        ];
             
             // Фильтруем вещи: если учитель выбрал 'top', покажем только 'top'
             const items = filterType === 'all' ? allItems : allItems.filter(i => i.type === filterType);
