@@ -4,73 +4,19 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Основной контейнер игры */
-        .game-container {
-            display: flex;
-            align-items: flex-start;
-            gap: 20px;
-            justify-content: center;
-            padding: 10px;
-        }
+        .game-container { display: flex; align-items: flex-start; gap: 20px; justify-content: center; padding: 10px; }
+        #character-preview { flex-shrink: 0; background: #fff; border-radius: 20px; border: 3px solid #ff4081; position: relative; width: 220px; height: 380px; }
+        .shop-content { flex-grow: 1; max-height: 380px; overflow-y: auto; }
         
-        /* Окно предпросмотра персонажа */
-        #character-preview {
-            flex-shrink: 0;
-            background: #ffffff;
-            border-radius: 20px;
-            overflow: hidden;
-            border: 3px solid #ff4081;
-            position: relative;
-            width: 220px;
-            height: 380px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
+        /* Таймер */
+        #timer-display { font-size: 24px; font-weight: bold; color: #ff4081; text-align: center; margin-bottom: 10px; }
+        .timer-low { color: red !important; animation: blink 0.5s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
-        /* Список товаров в магазине */
-        .shop-content {
-            flex-grow: 1;
-            max-height: 380px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        /* Эффект сияния при покупке/примерке */
-        @keyframes shine {
-            0% { filter: brightness(1) drop-shadow(0 0 0px gold); }
-            50% { filter: brightness(1.4) drop-shadow(0 0 20px gold); }
-            100% { filter: brightness(1) drop-shadow(0 0 0px gold); }
-        }
-        .shining {
-            animation: shine 0.8s ease-in-out;
-        }
-
-        /* Карточка товара в магазине */
-        .shop-item {
-            background: #fff0f5;
-            margin-bottom: 8px;
-            padding: 12px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: 0.2s;
-        }
-        .shop-item:hover {
-            transform: scale(1.02);
-            background: #ffe4ee;
-        }
-
-        /* Стили для картинки задания */
-        .task-image {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
+        .shop-item { background: #fff0f5; margin-bottom: 8px; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .price-tag { font-size: 0.9rem; font-weight: bold; color: #d81b60; }
+        .shining { animation: shine 0.8s ease-in-out; }
+        @keyframes shine { 0% { filter: brightness(1); } 50% { filter: brightness(1.4) drop-shadow(0 0 20px gold); } 100% { filter: brightness(1); } }
     </style>
 </head>
 <body>
@@ -83,158 +29,148 @@
 
     <div id="fq-overlay" class="hidden">
         <div id="fq-modal" style="max-width: 750px; width: 95%;">
+            <div id="timer-display"></div>
             <h2 id="modal-title" style="color: #ff4081; margin-top: 0; text-align: center;"></h2>
             
             <div class="game-container">
                 <div id="character-preview">
-                    <img id="base-body" src="assets/body/girl.png" style="position: absolute; top:0; left:0; width: 100%; z-index: 1;">
-                    <img id="layer-bottom" src="" style="position: absolute; top:0; left:0; width: 100%; z-index: 2;">
-                    <img id="layer-top" src="" style="position: absolute; top:0; left:0; width: 100%; z-index: 3;">
-                    <img id="layer-shoes" src="" style="position: absolute; top:0; left:0; width: 100%; z-index: 4;">
-                    <img id="layer-acc" src="" style="position: absolute; top:0; left:0; width: 100%; z-index: 5;">
+                    <img id="base-body" src="assets/body/girl.png" style="position: absolute; width: 100%; z-index: 1;">
+                    <img id="layer-bottom" src="" style="position: absolute; width: 100%; z-index: 2;">
+                    <img id="layer-top" src="" style="position: absolute; width: 100%; z-index: 3;">
+                    <img id="layer-shoes" src="" style="position: absolute; width: 100%; z-index: 4;">
+                    <img id="layer-acc" src="" style="position: absolute; width: 100%; z-index: 5;">
                 </div>
-
                 <div id="modal-content" class="shop-content"></div>
             </div>
 
-            <button id="modal-btn" style="margin-top: 15px; background: #ff4081; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-weight: bold; width: 100%;">ОК</button>
+            <button id="modal-btn" style="margin-top: 15px; background: #ff4081; color: white; border: none; padding: 12px; border-radius: 25px; width: 100%; cursor: pointer; font-weight: bold;">ОК</button>
         </div>
     </div>
 
     <script src="engine.js"></script>
     <script>
-        const overlay = document.getElementById('fq-overlay');
-        const content = document.getElementById('modal-content');
-        const title = document.getElementById('modal-title');
-        const btn = document.getElementById('modal-btn');
-        const coinSound = document.getElementById('sound-coin');
+        let timeLeft = 0;
+        let timerId = null;
+        let currentReward = 0;
 
-        // Функция обновления цифры баланса
-        function refreshBalance() {
-            document.getElementById('balance-val').innerText = window.FQ.money;
-        }
-
+        function refreshBalance() { document.getElementById('balance-val').innerText = window.FQ.money; }
         window.onload = refreshBalance;
 
-        // Слушаем сигналы от кнопок из Genially
         window.addEventListener('message', function(event) {
             if (event.data.type === 'openTask') {
-                openTask(event.data.q, event.data.a, event.data.m, event.data.img, event.data.shopType);
+                startTask(event.data);
             }
         });
 
-        // ОТКРЫТИЕ ЗАДАНИЯ
-        function openTask(question, correctAnswer, reward, taskImg, shopType) {
+        function startTask(data) {
+            const timerDisplay = document.getElementById('timer-display');
+            timeLeft = data.time;
+            currentReward = 200; // Максимальная награда
+            
+            timerDisplay.innerText = `Осталось времени: ${timeLeft} сек`;
+            timerDisplay.classList.remove('timer-low');
+            timerDisplay.style.display = 'block';
+
+            // Запуск таймера
+            clearInterval(timerId);
+            timerId = setInterval(() => {
+                timeLeft--;
+                timerDisplay.innerText = `Осталось времени: ${timeLeft} сек`;
+                if(timeLeft <= 10) timerDisplay.classList.add('timer-low');
+                if(timeLeft <= 0) {
+                    clearInterval(timerId);
+                    timerDisplay.innerText = "Время вышло! Награда снижена.";
+                    currentReward = 100; // Снижаем награду
+                }
+            }, 1000);
+
+            openTaskUI(data);
+        }
+
+        function openTaskUI(data) {
+            const content = document.getElementById('modal-content');
+            const title = document.getElementById('modal-title');
+            const btn = document.getElementById('modal-btn');
+            
             title.innerText = "Задание";
-            document.getElementById('character-preview').style.display = 'none'; // Скрываем куклу на время вопроса
+            document.getElementById('character-preview').style.display = 'none';
             
-            // Проверяем, есть ли картинка в задании
-            let imgHtml = taskImg ? `<img src="${taskImg}" class="task-image">` : '';
+            let imgHtml = data.img ? `<img src="${data.img}" style="max-width:100%; display:block; margin: 0 auto 10px; border-radius:10px;">` : '';
+            content.innerHTML = `${imgHtml}<p style="text-align:center;">${data.q}</p><input type="text" id="user-answer" style="width:100%; padding:10px; border-radius:10px; border:2px solid #ff4081; text-align:center;" placeholder="Ответ...">`;
             
-            content.innerHTML = `
-                ${imgHtml}
-                <p style="font-size: 1.1rem; color: #333; text-align:center; font-weight: 500;">${question}</p>
-                <input type="text" id="user-answer" style="width:100%; padding:12px; border: 2px solid #ff4081; border-radius: 12px; text-align: center; font-size: 1.1rem;" placeholder="Напиши ответ здесь...">
-            `;
-            overlay.classList.remove('hidden');
+            document.getElementById('fq-overlay').classList.remove('hidden');
+            btn.innerText = "Проверить";
             
-            btn.innerText = "Проверить ответ";
-            btn.onclick = function() {
-                const val = document.getElementById('user-answer').value;
-                if(val && val.toLowerCase().trim() === correctAnswer.toLowerCase().trim()) {
-                    window.FQ.addMoney(reward);
+            btn.onclick = () => {
+                const ans = document.getElementById('user-answer').value;
+                if(ans.toLowerCase().trim() === data.a.toLowerCase().trim()) {
+                    clearInterval(timerId);
+                    window.FQ.addMoney(currentReward);
                     refreshBalance();
-                    openShop(shopType); // Переходим в нужный отдел магазина
+                    openShop(data.shopType);
                 } else {
-                    alert("Упс! Неверный ответ. Попробуй ещё раз!");
+                    alert("Неверно! Попробуй еще раз.");
                 }
             };
         }
 
-        // ОТКРЫТИЕ МАГАЗИНА (с фильтрацией по категориям)
-        function openShop(filterType = 'all') {
-            title.innerText = "Выбери награду";
-            document.getElementById('character-preview').style.display = 'block'; // Показываем куклу
+        function openShop(filterType) {
+            document.getElementById('timer-display').style.display = 'none';
+            document.getElementById('character-preview').style.display = 'block';
+            document.getElementById('modal-title').innerText = "Магазин: " + filterType;
             
-            // ТВОЙ РАСШИРЕННЫЙ СПИСОК ВЕЩЕЙ
-        const allItems = [
-            // ВЕРХ (TOP)
-            {id: 'top_1', name: 'Джинсовка', price: 100, type: 'top'},
-            {id: 'top_2', name: 'Розовое худи', price: 120, type: 'top'},
-            {id: 'top_3', name: 'Стильная футболка', price: 80, type: 'top'},
-            
-            // НИЗ (BOTTOM)
-            {id: 'bottom_1', name: 'Джинсы', price: 150, type: 'bottom'},
-            {id: 'bottom_2', name: 'Юбка', price: 130, type: 'bottom'},
-            {id: 'bottom_3', name: 'Брюки чинос', price: 140, type: 'bottom'},
-            
-            // ОБУВЬ (SHOES)
-            {id: 'shoes_1', name: 'Кеды', price: 80, type: 'shoes'},
-            {id: 'shoes_2', name: 'Ботинки', price: 110, type: 'shoes'},
-            
-            // АКСЕССУАРЫ (ACC)
-            {id: 'acc_1', name: 'Стильные очки', price: 50, type: 'acc'},
-            {id: 'acc_2', name: 'Модная сумка', price: 90, type: 'acc'},
-            {id: 'acc_3', name: 'Шляпа', price: 70, type: 'acc'}
-        ];
-            
-            // Фильтруем вещи: если учитель выбрал 'top', покажем только 'top'
-            const items = filterType === 'all' ? allItems : allItems.filter(i => i.type === filterType);
-            
+            // Цены: 200 за "крутую" вещь, 100 за "обычную"
+            const allItems = [
+                {id: 'top_1', name: '💎 Элитная куртка', price: 200, type: 'top'},
+                {id: 'top_2', name: '👕 Простая футболка', price: 100, type: 'top'},
+                {id: 'bottom_1', name: '💎 Брендовые джинсы', price: 200, type: 'bottom'},
+                {id: 'bottom_2', name: '🩳 Обычные шорты', price: 100, type: 'bottom'},
+                {id: 'shoes_1', name: '💎 Золотые кеды', price: 200, type: 'shoes'},
+                {id: 'shoes_2', name: '👟 Тапочки', price: 100, type: 'shoes'}
+            ];
+
+            const items = allItems.filter(i => i.type === filterType);
             let html = `<div>`;
-            if (items.length === 0) html += `<p style="text-align:center; color:#888;">В этой категории вещей пока нет.</p>`;
-            
             items.forEach(item => {
                 const isBought = window.FQ.inventory.includes(item.id);
                 html += `
                     <div class="shop-item">
-                        <span><b>${item.name}</b><br><small>${item.price} 💰</small></span>
-                        <button onclick="tryOn('${item.id}', ${item.price}, '${item.type}')" 
-                                style="background: ${isBought ? '#4CAF50' : '#ff4081'}; color: white; border: none; padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: bold;">
-                            ${isBought ? 'Надеть' : 'Купить'}
+                        <span>${item.name}<br><span class="price-tag">${item.price} 💰</span></span>
+                        <button onclick="tryOn('${item.id}', ${item.price}, '${item.type}')" style="background:${isBought?'#4CAF50':'#ff4081'}; color:white; border:none; padding:8px 15px; border-radius:10px; cursor:pointer;">
+                            ${isBought ? 'Надето' : 'Купить'}
                         </button>
                     </div>`;
             });
             html += `</div>`;
             
-            content.innerHTML = html;
-            btn.innerText = "Вернуться в игру";
-            btn.onclick = () => {
-                overlay.classList.add('hidden');
+            document.getElementById('modal-content').innerHTML = html;
+            document.getElementById('modal-btn').innerText = "Следующий уровень";
+            document.getElementById('modal-btn').onclick = () => {
+                document.getElementById('fq-overlay').classList.add('hidden');
                 window.parent.postMessage({type: 'close'}, '*');
             };
         }
 
-        // ФУНКЦИЯ ПРИМЕРКИ / ПОКУПКИ
         function tryOn(id, price, type) {
-            const charPreview = document.getElementById('character-preview');
-            
             if (window.FQ.inventory.includes(id)) {
-                // Если вещь уже куплена — просто надеваем её
-                applyVisualWear(id, type);
+                apply(id, type);
+            } else if (window.FQ.buyItem(id, price)) {
+                document.getElementById('sound-coin').play();
+                refreshBalance();
+                apply(id, type);
+                // Перерисовать кнопки, чтобы текущая стала зеленой
+                const currentShopType = document.getElementById('modal-title').innerText.split(': ')[1];
+                openShop(currentShopType);
             } else {
-                // Если нет — пробуем купить
-                if (window.FQ.buyItem(id, price)) {
-                    coinSound.play(); // Звук денег
-                    refreshBalance();
-                    applyVisualWear(id, type);
-                    openShop(window.currentShopType || 'all'); // Обновляем список (чтобы кнопка стала зеленой)
-                } else {
-                    alert("Недостаточно монет! Решай больше заданий.");
-                }
+                alert("Не хватило на крутую вещь! Нужно было решать быстрее.");
             }
         }
 
-        // Накладываем картинку на куклу
-        function applyVisualWear(id, type) {
-            const layer = document.getElementById('layer-' + type);
-            const charPreview = document.getElementById('character-preview');
-            
-            layer.src = 'assets/clothes/' + type + '/' + id + '.png';
-            
-            // Эффект сияния
-            charPreview.classList.add('shining');
-            setTimeout(() => charPreview.classList.remove('shining'), 800);
+        function apply(id, type) {
+            document.getElementById('layer-' + type).src = `assets/clothes/${type}/${id}.png`;
+            const cp = document.getElementById('character-preview');
+            cp.classList.add('shining');
+            setTimeout(() => cp.classList.remove('shining'), 800);
         }
     </script>
 </body>
