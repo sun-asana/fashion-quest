@@ -15,6 +15,7 @@
             border-radius: 24px !important;
             background: white !important;
             border: none !important;
+            position: relative; /* Чтобы тост позиционировался внутри модалки */
         }
 
         .game-container { 
@@ -95,6 +96,7 @@
             50% { filter: brightness(1.2) drop-shadow(0 0 10px var(--accent-color)); } 
             100% { filter: brightness(1); } 
         }
+
         /* Красивое уведомление о нехватке монет */
         #error-toast {
             position: absolute;
@@ -103,20 +105,23 @@
             transform: translateX(-50%);
             background: #e74c3c;
             color: white;
-            padding: 10px 20px;
+            padding: 10px 25px;
             border-radius: 50px;
             font-family: sans-serif;
             font-weight: bold;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             z-index: 10000;
             opacity: 0;
-            transition: 0.3s;
+            transition: all 0.3s ease;
             pointer-events: none;
+            white-space: nowrap;
         }
-        #error-toast.show { opacity: 1; top: 30px; }
+        #error-toast.show { opacity: 1; top: 40px; }
     </style>
 </head>
 <body>
+    <div id="error-toast">Не хватает монет!</div>
+
     <audio id="sound-coin" src="https://www.soundjay.com/misc/sounds/coins-spilled-1.mp3"></audio>
 
     <div id="balance-container" class="fq-balance-widget">
@@ -151,21 +156,16 @@
         let timerId = null;
         let currentReward = 0;
 
-        // Функция обновления баланса на экране
         function refreshBalance() { 
             document.getElementById('balance-val').innerText = window.FQ.money; 
         }
 
         window.onload = function() {
-            // 1. Обнуляем деньги
             window.FQ.money = 0; 
             localStorage.setItem('fq_money', 0); 
-            
-            // 2. Полностью очищаем инвентарь (шкаф)
             window.FQ.inventory = []; 
             localStorage.setItem('fq_inventory', JSON.stringify([])); 
             
-            // 3. Снимаем всю надетую одежду с куклы визуально
             const layers = ['top', 'bottom', 'shoes', 'hat', 'acc'];
             layers.forEach(layer => {
                 const img = document.getElementById('layer-' + layer);
@@ -285,6 +285,15 @@
             };
         }
 
+        // 2. Добавляем функцию показа красивой ошибки
+        function showError(text) {
+            const toast = document.getElementById('error-toast');
+            toast.innerText = text;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // 3. Обновляем функцию покупки
         function tryOn(id, price, type) {
             if (window.FQ.inventory.includes(id)) {
                 apply(id, type);
@@ -295,7 +304,8 @@
                 apply(id, type);
                 openShop(type);
             } else {
-                alert("Не хватает монет для элитной вещи!");
+                // Вызываем наше красивое уведомление вместо системного alert
+                showError("Не хватает монет!");
             }
         }
 
