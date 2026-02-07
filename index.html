@@ -302,12 +302,15 @@ window.onload = function() {
         }
 
         function apply(id, type) {
-            const img = document.getElementById('layer-' + type);
-            if (img) {
-                img.src = `assets/clothes/${type}/${id}.png?v=${new Date().getTime()}`;
-                img.style.display = 'block';
-            }
-        }
+    // Убедимся, что type — это именно то, что нужно (top, bottom и т.д.)
+    // Если id выглядит как 'top_1', то type должен быть 'top'
+    const cleanType = type || id.split('_')[0]; 
+    const img = document.getElementById('layer-' + cleanType);
+    if (img) {
+        img.src = `assets/clothes/${cleanType}/${id}.png?v=${new Date().getTime()}`;
+        img.style.display = 'block';
+    }
+}
 
         function showError(text) {
             const t = document.getElementById('error-toast');
