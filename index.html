@@ -234,7 +234,7 @@
             document.getElementById('fq-overlay').classList.remove('hidden');
             btn.innerText = "Проверить ответ";
             
-            btn.onclick = () => {
+         btn.onclick = () => {
                 const ans = document.getElementById('user-answer').value;
                 if(ans && ans.toLowerCase().trim() === data.a.toLowerCase().trim()) {
                     clearInterval(timerId);
@@ -242,7 +242,8 @@
                     refreshBalance();
                     openShop(data.shopType);
                 } else {
-                    alert("Неверно! Попробуй еще раз.");
+                    // Используем наш красивый тост вместо системного алерта
+                    showError("Неверно! Попробуй еще раз.");
                 }
             };
         }
