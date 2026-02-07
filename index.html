@@ -156,79 +156,53 @@
 
     <script src="engine.js"></script>
     <script>
-        let timeLeft = 0;
+let timeLeft = 0;
         let timerId = null;
         let currentReward = 0;
 
-        // Функция для обновления баланса на экране
         function refreshBalance() { 
-            document.getElementById('balance-val').innerText = window.FQ.money; 
+            const el = document.getElementById('balance-val');
+            if(el) el.innerText = window.FQ.money; 
         }
 
-        // ГЛАВНЫЙ ЗАПУСК
+        // 1. ОДЕВАЕМ КУКЛУ ПРИ ЗАГРУЗКЕ
         window.onload = function() {
-            window.FQ.money = 0; // Обнуляем деньги для нового задания
-            
-            // Загружаем инвентарь
+            window.FQ.money = 0; 
             const saved = localStorage.getItem('fq_inventory');
             window.FQ.inventory = saved ? JSON.parse(saved) : [];
-            
             refreshBalance();
             
-            // Запускаем принудительное "одевание" с проверкой готовности DOM
-            reDressCharacter();
+            // Пробуем одеть несколько раз, пока Genially грузится
+            let count = 0;
+            const retry = setInterval(() => {
+                window.FQ.inventory.forEach(id => apply(id, id.split('_')[0]));
+                if (++count > 10) clearInterval(retry);
+            }, 300);
         };
 
-        // Новая усиленная функция одевания
-        function reDressCharacter() {
-            const layers = ['top', 'bottom', 'shoes', 'hat', 'acc'];
-            layers.forEach(layer => {
-                const savedId = window.FQ.inventory.find(id => id.startsWith(layer + '_'));
-                if (savedId) {
-                    // Используем интервал, если вдруг картинка еще не прогрузилась в Genially
-                    let attempts = 0;
-                    const checkExist = setInterval(() => {
-                        const img = document.getElementById('layer-' + layer);
-                        if (img) {
-                            apply(savedId, layer);
-                            clearInterval(checkExist);
-                        }
-                        if (++attempts > 20) clearInterval(checkExist); // Стоп через 2 сек
-                    }, 100);
+        // 2. СЛУШАЕМ КОМАНДЫ ОТ GENIALLY
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'openTask') {
+                if(event.data.themeColor) {
+                    document.documentElement.style.setProperty('--accent-color', event.data.themeColor);
                 }
-            });
-        }
-
-        function apply(id, type) {
-            const img = document.getElementById('layer-' + type);
-            if (img) {
-                // Добавляем случайный хвост к ссылке, чтобы Genially не брал пустую картинку из кеша
-                img.src = `assets/clothes/${type}/${id}.png?v=${new Date().getTime()}`;
-                img.style.display = 'block';
-                img.style.opacity = '1';
+                startTask(event.data);
             }
-            
-            const cp = document.getElementById('character-preview');
-            if (cp) {
-                cp.classList.add('shining');
-                setTimeout(() => cp.classList.remove('shining'), 800);
-            }
-        }
+        });
 
         function startTask(data) {
             timeLeft = data.time;
             currentReward = 200;
-            const td = document.getElementById('timer-display');
-            td.style.display = 'block';
-            td.innerText = `⏳ Время: ${timeLeft} сек`;
+            document.getElementById('timer-display').style.display = 'block';
+            document.getElementById('timer-display').innerText = `⏳ Время: ${timeLeft} сек`;
 
             clearInterval(timerId);
             timerId = setInterval(() => {
                 timeLeft--;
-                td.innerText = `⏳ Время: ${timeLeft} сек`;
+                document.getElementById('timer-display').innerText = `⏳ Время: ${timeLeft} сек`;
                 if(timeLeft <= 0) {
                     clearInterval(timerId);
-                    td.innerText = "⌛ Время вышло! Награда снижена.";
+                    document.getElementById('timer-display').innerText = "⌛ Время вышло! Награда снижена.";
                     currentReward = 100;
                 }
             }, 1000);
@@ -237,24 +211,19 @@
         }
 
         function openTaskUI(data) {
-            const content = document.getElementById('modal-content');
-            const title = document.getElementById('modal-title');
-            const btn = document.getElementById('modal-btn');
-            
-            title.innerText = "Задание";
+            document.getElementById('modal-title').innerText = "Задание";
             document.getElementById('character-preview').style.display = 'none';
+            document.getElementById('fq-overlay').classList.remove('hidden');
             
             let imgHtml = data.img ? `<img src="${data.img}" style="max-width:100%; max-height:250px; display:block; margin: 0 auto 15px; border-radius:15px;">` : '';
-            content.innerHTML = `
+            document.getElementById('modal-content').innerHTML = `
                 ${imgHtml}
-                <p style="text-align:center; font-size: 18px; color: #444; font-family: sans-serif;">${data.q}</p>
-                <input type="text" id="user-answer" style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--accent-color); text-align:center; font-size: 18px;" placeholder="Введите ответ...">
+                <p style="text-align:center; font-size: 18px; color: #444;">${data.q}</p>
+                <input type="text" id="user-answer" style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--accent-color); text-align:center;" placeholder="Введите ответ...">
             `;
             
-            document.getElementById('fq-overlay').classList.remove('hidden');
-            btn.innerText = "Проверить ответ";
-            
-         btn.onclick = () => {
+            document.getElementById('modal-btn').innerText = "Проверить ответ";
+            document.getElementById('modal-btn').onclick = () => {
                 const ans = document.getElementById('user-answer').value;
                 if(ans && ans.toLowerCase().trim() === data.a.toLowerCase().trim()) {
                     clearInterval(timerId);
@@ -262,34 +231,18 @@
                     refreshBalance();
                     openShop(data.shopType);
                 } else {
-                    // Используем наш красивый тост вместо системного алерта
                     showError("Неверно! Попробуй еще раз.");
                 }
             };
         }
 
-function openShop(filterType) {
-            // 1. Сначала показываем нужные блоки
+        function openShop(filterType) {
             document.getElementById('timer-display').style.display = 'none';
             document.getElementById('character-preview').style.display = 'block';
             
-            const typeNames = {
-                'top': 'Верхняя одежда',
-                'bottom': 'Низ',
-                'shoes': 'Обувь',
-                'hat': 'Головной убор',
-                'acc': 'Аксессуары'
-            };
+            const typeNames = {'top':'Верх','bottom':'Низ','shoes':'Обувь','hat':'Шапка','acc':'Аксессуар'};
             document.getElementById('modal-title').innerText = typeNames[filterType] || "Магазин";
             
-            // 2. ЖЕЛЕЗОБЕТОННОЕ ОДЕВАНИЕ:
-            // Берем всё, что накоплено в инвентаре, и надеваем на куклу
-            window.FQ.inventory.forEach(itemId => {
-                const type = itemId.split('_')[0]; // из 'top_1' получим 'top'
-                apply(itemId, type); 
-            });
-
-            // 3. Твой обновленный список предметов
             const allItems = [
                 {id: 'top_1', name: '💎 Элитная вещь', price: 200, type: 'top'},
                 {id: 'top_2', name: '👕 Базовая вещь', price: 100, type: 'top'},
@@ -304,20 +257,17 @@ function openShop(filterType) {
             ];
 
             const items = allItems.filter(i => i.type === filterType);
-            let html = `<div>`;
+            let html = '';
             items.forEach(item => {
-                const isBought = window.FQ.inventory.includes(item.id);
-                html += `
-                    <div class="shop-item">
-                        <span style="font-family: sans-serif;"><b>${item.name}</b><br><span class="price-tag">${item.price} 💰</span></span>
-                        <button onclick="tryOn('${item.id}', ${item.price}, '${item.type}')" 
-                                style="background:${isBought?'#27ae60':'var(--accent-color)'}; color:white; border:none; padding:10px 20px; border-radius:10px; cursor:pointer; font-weight:bold;">
-                            ${isBought ? 'Надето' : 'Купить'}
-                        </button>
-                    </div>`;
+                const bought = window.FQ.inventory.includes(item.id);
+                html += `<div class="shop-item">
+                    <span><b>${item.name}</b><br><small>${item.price} 💰</small></span>
+                    <button onclick="tryOn('${item.id}', ${item.price}, '${item.type}')" 
+                            style="background:${bought?'#27ae60':'var(--accent-color)'}; color:white; border:none; padding:10px; border-radius:10px;">
+                        ${bought ? 'Надето' : 'Купить'}
+                    </button>
+                </div>`;
             });
-            html += `</div>`;
-            
             document.getElementById('modal-content').innerHTML = html;
             document.getElementById('modal-btn').innerText = "Продолжить путь ✨";
             document.getElementById('modal-btn').onclick = () => {
@@ -326,53 +276,30 @@ function openShop(filterType) {
             };
         }
 
-        // 2. Добавляем функцию показа красивой ошибки
-        function showError(text) {
-            const toast = document.getElementById('error-toast');
-            toast.innerText = text;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
-        }
-
-        // 3. Обновляем функцию покупки
         function tryOn(id, price, type) {
-            if (window.FQ.inventory.includes(id)) {
-                apply(id, type);
-                openShop(type);
-            } else if (window.FQ.buyItem(id, price)) {
-                document.getElementById('sound-coin').play();
+            if (window.FQ.inventory.includes(id) || window.FQ.buyItem(id, price)) {
+                if(!window.FQ.inventory.includes(id)) document.getElementById('sound-coin').play();
                 refreshBalance();
                 apply(id, type);
                 openShop(type);
             } else {
-                // Вызываем наше красивое уведомление вместо системного alert
                 showError("Не хватает монет!");
             }
         }
 
         function apply(id, type) {
-            console.log("Пытаюсь надеть:", id, "на слой:", type); // Для проверки в консоли
-            
             const img = document.getElementById('layer-' + type);
             if (img) {
-                // Добавляем случайное число в конец пути, чтобы браузер не брал старую картинку из кеша
-                const cacheBuster = "?" + new Date().getTime();
-                img.src = `assets/clothes/${type}/${id}.png` + cacheBuster;
-                
-                // Снимаем скрытие, если оно было
-                img.style.display = 'block'; 
-                
-                // Проверка: если картинка не загрузилась, выведем ошибку в консоль
-                img.onerror = () => console.error("Файл не найден по пути: " + img.src);
-            } else {
-                console.error("Не найден элемент на странице с ID: layer-" + type);
+                img.src = `assets/clothes/${type}/${id}.png?v=${new Date().getTime()}`;
+                img.style.display = 'block';
             }
-            
-            const cp = document.getElementById('character-preview');
-            if (cp) {
-                cp.classList.add('shining');
-                setTimeout(() => cp.classList.remove('shining'), 800);
-            }
+        }
+
+        function showError(text) {
+            const t = document.getElementById('error-toast');
+            t.innerText = text;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
         }
     </script>
 </body>
