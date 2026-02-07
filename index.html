@@ -160,16 +160,23 @@
             document.getElementById('balance-val').innerText = window.FQ.money; 
         }
 
-        window.onload = function() {
-            window.FQ.money = 0; 
-            localStorage.setItem('fq_money', 0); 
-            window.FQ.inventory = []; 
-            localStorage.setItem('fq_inventory', JSON.stringify([])); 
+       window.onload = function() {
+            // Пытаемся достать данные из памяти
+            const savedMoney = localStorage.getItem('fq_money');
+            const savedInventory = localStorage.getItem('fq_inventory');
+
+            // Если данных еще нет (первый запуск), ставим 0, иначе берем сохраненное
+            window.FQ.money = savedMoney ? parseInt(savedMoney) : 0;
+            window.FQ.inventory = savedInventory ? JSON.parse(savedInventory) : [];
             
+            // Проверяем каждый слой и отображаем надетую вещь
             const layers = ['top', 'bottom', 'shoes', 'hat', 'acc'];
             layers.forEach(layer => {
-                const img = document.getElementById('layer-' + layer);
-                if (img) img.src = "";
+                // Ищем в инвентаре вещь этого типа
+                const itemOnLayer = window.FQ.inventory.find(id => id.startsWith(layer + '_'));
+                if (itemOnLayer) {
+                    apply(itemOnLayer, layer);
+                }
             });
 
             refreshBalance();
