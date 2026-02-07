@@ -164,19 +164,17 @@
             document.getElementById('balance-val').innerText = window.FQ.money; 
         }
 
-       window.onload = function() {
-            // Пытаемся достать данные из памяти
-            const savedMoney = localStorage.getItem('fq_money');
-            const savedInventory = localStorage.getItem('fq_inventory');
+window.onload = function() {
+            // 1. Деньги НЕ загружаем из памяти — всегда стартуем с 0 на новом слайде
+            window.FQ.money = 0; 
 
-            // Если данных еще нет (первый запуск), ставим 0, иначе берем сохраненное
-            window.FQ.money = savedMoney ? parseInt(savedMoney) : 0;
+            // 2. А одежду ЗАГРУЖАЕМ, чтобы она не пропадала
+            const savedInventory = localStorage.getItem('fq_inventory');
             window.FQ.inventory = savedInventory ? JSON.parse(savedInventory) : [];
             
             // Проверяем каждый слой и отображаем надетую вещь
             const layers = ['top', 'bottom', 'shoes', 'hat', 'acc'];
             layers.forEach(layer => {
-                // Ищем в инвентаре вещь этого типа
                 const itemOnLayer = window.FQ.inventory.find(id => id.startsWith(layer + '_'));
                 if (itemOnLayer) {
                     apply(itemOnLayer, layer);
