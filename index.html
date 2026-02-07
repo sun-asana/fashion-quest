@@ -165,24 +165,23 @@
         }
 
 window.onload = function() {
-            // 1. Деньги НЕ загружаем из памяти — всегда стартуем с 0 на новом слайде
-            window.FQ.money = 0; 
+    // 1. Деньги всегда 0 при старте слайда
+    window.FQ.money = 0; 
 
-            // 2. А одежду ЗАГРУЖАЕМ, чтобы она не пропадала
-            const savedInventory = localStorage.getItem('fq_inventory');
-            window.FQ.inventory = savedInventory ? JSON.parse(savedInventory) : [];
-            
-            // Проверяем каждый слой и отображаем надетую вещь
-            const layers = ['top', 'bottom', 'shoes', 'hat', 'acc'];
-            layers.forEach(layer => {
-                const itemOnLayer = window.FQ.inventory.find(id => id.startsWith(layer + '_'));
-                if (itemOnLayer) {
-                    apply(itemOnLayer, layer);
-                }
-            });
+    // 2. Загружаем инвентарь из памяти
+    const savedInventory = localStorage.getItem('fq_inventory');
+    window.FQ.inventory = savedInventory ? JSON.parse(savedInventory) : [];
+    
+    // 3. Ждем 50мс, чтобы DOM проснулся, и надеваем вещи
+    setTimeout(() => {
+        window.FQ.inventory.forEach(itemId => {
+            const type = itemId.split('_')[0];
+            apply(itemId, type);
+        });
+    }, 50);
 
-            refreshBalance();
-        };
+    refreshBalance();
+};
 
         window.addEventListener('message', function(event) {
             if (event.data.type === 'openTask') {
