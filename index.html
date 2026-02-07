@@ -328,6 +328,12 @@ window.onload = function() {
             setTimeout(() => t.classList.remove('show'), 2000);
         }
         console.log("Магазин загружен и готов слушать команды!");
+        // Этот код заставляет магазин "слышать" кнопку из Genially
+window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'openTask') {
+        startTask(event.data);
+    }
+});
     </script>
 </body>
 </html>
