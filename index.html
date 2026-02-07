@@ -328,15 +328,28 @@ function openShop(filterType) {
         }
 
         function apply(id, type) {
+            console.log("Пытаюсь надеть:", id, "на слой:", type); // Для проверки в консоли
+            
             const img = document.getElementById('layer-' + type);
             if (img) {
-                img.src = `assets/clothes/${type}/${id}.png`;
-                img.style.display = 'block'; // Убеждаемся, что слой виден
+                // Добавляем случайное число в конец пути, чтобы браузер не брал старую картинку из кеша
+                const cacheBuster = "?" + new Date().getTime();
+                img.src = `assets/clothes/${type}/${id}.png` + cacheBuster;
+                
+                // Снимаем скрытие, если оно было
+                img.style.display = 'block'; 
+                
+                // Проверка: если картинка не загрузилась, выведем ошибку в консоль
+                img.onerror = () => console.error("Файл не найден по пути: " + img.src);
+            } else {
+                console.error("Не найден элемент на странице с ID: layer-" + type);
             }
             
             const cp = document.getElementById('character-preview');
-            cp.classList.add('shining');
-            setTimeout(() => cp.classList.remove('shining'), 800);
+            if (cp) {
+                cp.classList.add('shining');
+                setTimeout(() => cp.classList.remove('shining'), 800);
+            }
         }
     </script>
 </body>
