@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="styles.css">
@@ -301,6 +302,7 @@ let timeLeft = 0;
             t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 2000);
         }
+        console.log("Магазин загружен и готов слушать команды!");
     </script>
 </body>
 </html>
