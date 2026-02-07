@@ -160,37 +160,60 @@
         let timerId = null;
         let currentReward = 0;
 
+        // Функция для обновления баланса на экране
         function refreshBalance() { 
             document.getElementById('balance-val').innerText = window.FQ.money; 
         }
 
-window.onload = function() {
-    // 1. Деньги всегда 0 при старте слайда
-    window.FQ.money = 0; 
+        // ГЛАВНЫЙ ЗАПУСК
+        window.onload = function() {
+            window.FQ.money = 0; // Обнуляем деньги для нового задания
+            
+            // Загружаем инвентарь
+            const saved = localStorage.getItem('fq_inventory');
+            window.FQ.inventory = saved ? JSON.parse(saved) : [];
+            
+            refreshBalance();
+            
+            // Запускаем принудительное "одевание" с проверкой готовности DOM
+            reDressCharacter();
+        };
 
-    // 2. Загружаем инвентарь из памяти
-    const savedInventory = localStorage.getItem('fq_inventory');
-    window.FQ.inventory = savedInventory ? JSON.parse(savedInventory) : [];
-    
-    // 3. Ждем 50мс, чтобы DOM проснулся, и надеваем вещи
-    setTimeout(() => {
-        window.FQ.inventory.forEach(itemId => {
-            const type = itemId.split('_')[0];
-            apply(itemId, type);
-        });
-    }, 50);
-
-    refreshBalance();
-};
-
-        window.addEventListener('message', function(event) {
-            if (event.data.type === 'openTask') {
-                if(event.data.themeColor) {
-                    document.documentElement.style.setProperty('--accent-color', event.data.themeColor);
+        // Новая усиленная функция одевания
+        function reDressCharacter() {
+            const layers = ['top', 'bottom', 'shoes', 'hat', 'acc'];
+            layers.forEach(layer => {
+                const savedId = window.FQ.inventory.find(id => id.startsWith(layer + '_'));
+                if (savedId) {
+                    // Используем интервал, если вдруг картинка еще не прогрузилась в Genially
+                    let attempts = 0;
+                    const checkExist = setInterval(() => {
+                        const img = document.getElementById('layer-' + layer);
+                        if (img) {
+                            apply(savedId, layer);
+                            clearInterval(checkExist);
+                        }
+                        if (++attempts > 20) clearInterval(checkExist); // Стоп через 2 сек
+                    }, 100);
                 }
-                startTask(event.data);
+            });
+        }
+
+        function apply(id, type) {
+            const img = document.getElementById('layer-' + type);
+            if (img) {
+                // Добавляем случайный хвост к ссылке, чтобы Genially не брал пустую картинку из кеша
+                img.src = `assets/clothes/${type}/${id}.png?v=${new Date().getTime()}`;
+                img.style.display = 'block';
+                img.style.opacity = '1';
             }
-        });
+            
+            const cp = document.getElementById('character-preview');
+            if (cp) {
+                cp.classList.add('shining');
+                setTimeout(() => cp.classList.remove('shining'), 800);
+            }
+        }
 
         function startTask(data) {
             timeLeft = data.time;
