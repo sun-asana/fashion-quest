@@ -247,17 +247,7 @@ window.onload = function() {
         }
 
 function openShop(filterType) {
-            // 1. Сначала надеваем всё, что уже есть в шкафу (памяти)
-            const layers = ['top', 'bottom', 'shoes', 'hat', 'acc'];
-            layers.forEach(layer => {
-                const itemOnLayer = window.FQ.inventory.find(id => id.startsWith(layer + '_'));
-                if (itemOnLayer) {
-                    // Даем браузеру 10мс, чтобы отрисовать окно, и «красим» куклу
-                    setTimeout(() => apply(itemOnLayer, layer), 10);
-                }
-            });
-
-            // 2. Скрываем таймер и показываем куклу
+            // 1. Сначала подготавливаем само окно
             document.getElementById('timer-display').style.display = 'none';
             document.getElementById('character-preview').style.display = 'block';
             
@@ -270,6 +260,22 @@ function openShop(filterType) {
             };
             document.getElementById('modal-title').innerText = typeNames[filterType] || "Магазин";
             
+            // 2. ВАЖНО: Принудительно очищаем и заново надеваем все вещи из инвентаря
+            // Сначала сбрасываем текущие картинки в модалке (чтобы не было наслоений)
+            const layers = ['top', 'bottom', 'shoes', 'hat', 'acc'];
+            layers.forEach(layer => {
+                const img = document.getElementById('layer-' + layer);
+                if (img) img.src = ""; // Очищаем
+            });
+
+            // Теперь надеваем то, что реально куплено
+            window.FQ.inventory.forEach(itemId => {
+                // Определяем тип вещи по её ID (например, 'top_1' -> 'top')
+                const type = itemId.split('_')[0]; 
+                apply(itemId, type);
+            });
+
+            // 3. Формируем список товаров (твой существующий код)
             const allItems = [
                 {id: 'top_1', name: '💎 Элитная вещь', price: 200, type: 'top'},
                 {id: 'top_2', name: '👕 Базовая вещь', price: 100, type: 'top'},
