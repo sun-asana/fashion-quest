@@ -246,7 +246,18 @@ window.onload = function() {
             };
         }
 
-        function openShop(filterType) {
+function openShop(filterType) {
+            // 1. Сначала надеваем всё, что уже есть в шкафу (памяти)
+            const layers = ['top', 'bottom', 'shoes', 'hat', 'acc'];
+            layers.forEach(layer => {
+                const itemOnLayer = window.FQ.inventory.find(id => id.startsWith(layer + '_'));
+                if (itemOnLayer) {
+                    // Даем браузеру 10мс, чтобы отрисовать окно, и «красим» куклу
+                    setTimeout(() => apply(itemOnLayer, layer), 10);
+                }
+            });
+
+            // 2. Скрываем таймер и показываем куклу
             document.getElementById('timer-display').style.display = 'none';
             document.getElementById('character-preview').style.display = 'block';
             
