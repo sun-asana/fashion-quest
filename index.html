@@ -161,6 +161,15 @@ let timeLeft = 0;
         let timerId = null;
         let currentReward = 0;
 
+        // Слушаем сообщения от Genially
+window.addEventListener('message', function(event) {
+    // Проверяем, что пришло именно наше сообщение
+    if (event.data && event.data.type === 'openTask') {
+        console.log("Команда получена!", event.data);
+        startTask(event.data);
+    }
+}, false);
+
         function refreshBalance() { 
             const el = document.getElementById('balance-val');
             if(el) el.innerText = window.FQ.money; 
