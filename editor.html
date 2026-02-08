@@ -2,34 +2,33 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Fashion Quest Creator</title>
+    <title>Fashion Quest: PRO Designer Editor</title>
     <style>
         :root {
             --neon-blue: #00d2ff;
             --neon-purple: #9d50bb;
-            --bg-dark: #0f172a; /* Глубокий темный цвет */
+            --bg-dark: #0f172a;
             --card-bg: #1e293b;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-dark);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
             color: #f1f5f9;
+            padding: 40px 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
             min-height: 100vh;
             margin: 0;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
         }
 
-        .container {
+        .editor-card {
             background: var(--card-bg);
             padding: 40px;
             border-radius: 28px;
             box-shadow: 0 0 30px rgba(0, 210, 255, 0.15);
             width: 100%;
-            max-width: 650px;
+            max-width: 600px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
         }
@@ -40,213 +39,187 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-size: 32px;
-            margin-bottom: 35px;
+            margin-bottom: 30px;
             text-transform: uppercase;
             letter-spacing: 3px;
             font-weight: 800;
         }
-
-        .input-group {
-            margin-bottom: 22px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 10px;
-            color: #94a3b8;
-            font-size: 14px;
-            font-weight: 600;
-            margin-left: 5px;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 14px 18px;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid #334155;
-            border-radius: 14px;
-            color: white;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
-            font-size: 15px;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
-            background: rgba(15, 23, 42, 0.8);
-        }
-
-        /* Неоновая кнопка генерации */
-        .btn-generate {
-            width: 100%;
-            padding: 18px;
-            margin-top: 15px;
-            border: none;
-            border-radius: 16px;
-            background: linear-gradient(45deg, #00d2ff, #9d50bb, #00d2ff);
-            background-size: 200% auto;
-            color: white;
-            font-weight: 800;
-            font-size: 17px;
-            cursor: pointer;
+        
+        .section-title {
+            font-size: 0.8rem;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            transition: 0.5s;
+            letter-spacing: 2px;
+            color: #94a3b8;
+            margin-top: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        label { font-weight: 600; display: block; margin-top: 18px; font-size: 0.9rem; color: #cbd5e1; }
+        input, select { 
+            width: 100%; padding: 14px; margin-top: 8px; 
+            border: 1px solid #334155; border-radius: 14px; 
+            box-sizing: border-box; background: rgba(15, 23, 42, 0.6); 
+            color: white; transition: 0.3s; 
+        }
+        input:focus { border-color: var(--neon-blue); outline: none; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3); }
+
+        /* Поле загрузки изображения */
+        #drop-zone { 
+            border: 2px dashed #334155; padding: 30px; 
+            text-align: center; border-radius: 16px; 
+            margin-top: 15px; color: #94a3b8; cursor: pointer; 
+            transition: 0.3s; background: rgba(15, 23, 42, 0.4);
+        }
+        #drop-zone:hover, #drop-zone.hover { 
+            border-color: var(--neon-blue); color: var(--neon-blue); 
+            background: rgba(0, 210, 255, 0.05); 
+        }
+        #preview-img { max-width: 100%; max-height: 180px; margin-top: 15px; border-radius: 12px; display: none; box-shadow: 0 0 15px rgba(0,0,0,0.3); }
+
+        /* Выбор цвета */
+        .color-picker-wrapper { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+        input[type="color"] { width: 80px; height: 45px; padding: 2px; cursor: pointer; border: none; background: none; }
+
+        /* Кнопка генерации */
+        #gen-btn { 
+            width: 100%; padding: 18px; 
+            background: linear-gradient(45deg, #00d2ff, #9d50bb); 
+            color: white; border: none; border-radius: 16px; 
+            cursor: pointer; font-size: 16px; font-weight: bold; 
+            margin-top: 35px; transition: 0.4s; text-transform: uppercase;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
-
-        .btn-generate:hover {
-            background-position: right center;
-            box-shadow: 0 0 25px rgba(0, 210, 255, 0.5);
-            transform: translateY(-2px);
-        }
-
-        /* Исправленный блок с кодом */
-        .output-container {
-            margin-top: 35px;
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        #gen-btn:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(0, 210, 255, 0.5); filter: brightness(1.1); }
+        
+        /* Блок результата */
+        .result-container { position: relative; margin-top: 30px; display: none; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .code-wrapper {
-            position: relative;
-            background: #020617;
-            border-radius: 16px;
-            border: 1px solid #1e293b;
-            padding: 20px;
-            margin-top: 10px;
-            overflow: hidden;
+            background: #020617; border-radius: 16px; 
+            border: 1px solid #1e293b; padding: 20px; 
+            margin-top: 10px; position: relative;
         }
-
-        #code-output {
-            width: 100%;
-            height: 150px;
-            background: transparent;
-            color: #38bdf8;
-            border: none;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 13px;
-            line-height: 1.6;
-            resize: none;
-            outline: none;
-            scrollbar-width: thin;
-            scrollbar-color: #334155 transparent;
+        code { 
+            display: block; color: #38bdf8; 
+            font-family: 'Consolas', monospace; font-size: 11px; 
+            white-space: pre-wrap; max-height: 150px; 
+            overflow-y: auto; line-height: 1.5; 
         }
-
-        /* Кнопка копирования внутри поля */
-        .btn-copy {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: rgba(56, 189, 248, 0.15);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            color: #38bdf8;
-            padding: 6px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 700;
-            transition: all 0.3s;
-            backdrop-filter: blur(4px);
+        
+        #copy-btn { 
+            position: absolute; top: 12px; right: 12px; 
+            background: rgba(56, 189, 248, 0.15); color: #38bdf8; 
+            border: 1px solid rgba(56, 189, 248, 0.3); 
+            padding: 6px 14px; border-radius: 8px; 
+            font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s; 
         }
-
-        .btn-copy:hover {
-            background: var(--neon-blue);
-            color: white;
-            box-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
-        }
-
-        .success-msg {
-            color: #22c55e;
-            font-size: 13px;
-            text-align: center;
-            margin-top: 8px;
-            font-weight: 600;
-            display: none;
-        }
+        #copy-btn:hover { background: var(--neon-blue); color: white; }
     </style>
 </head>
 <body>
+    <div class="editor-card">
+        <h2>Fashion Quest</h2>
+        
+        <div class="section-title">Контент</div>
+        <label>Вопрос для ученика:</label>
+        <input type="text" id="q" placeholder="Например: Реши задачу на картинке">
+        
+        <div id="drop-zone">Перетащите картинку задания (PNG/JPG)</div>
+        <input type="file" id="file-input" style="display:none" accept="image/*">
+        <center><img id="preview-img"></center>
 
-<div class="container">
-    <h2>Fashion Quest</h2> <div class="input-group">
-        <label>Текст вопроса:</label>
-        <input type="text" id="q-input" placeholder="Например: Реши задачу на картинке">
-    </div>
-
-    <div class="input-group">
         <label>Правильный ответ:</label>
-        <input type="text" id="a-input" placeholder="Введите точный ответ">
-    </div>
+        <input type="text" id="a" placeholder="Ответ">
 
-    <div class="input-group">
-        <label>Таймер (секунд):</label>
-        <input type="number" id="t-input" value="30">
-    </div>
+        <div class="section-title">Механика и Дизайн</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <label>Время (сек):</label>
+                <input type="number" id="timer" value="30">
+            </div>
+            <div>
+                <label>Цвет кнопок:</label>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="ui-color" value="#00d2ff">
+                </div>
+            </div>
+        </div>
 
-    <div class="input-group">
-        <label>Отдел магазина:</label>
-        <select id="type-input">
+        <label>Категория в магазине:</label>
+        <select id="type">
             <option value="top">Верхняя одежда</option>
-            <option value="bottom">Брюки и юбки</option>
+            <option value="bottom">Низ</option>
             <option value="shoes">Обувь</option>
-            <option value="hat">Головные уборы</option>
+            <option value="hat">Головной убор</option>
             <option value="acc">Аксессуары</option>
         </select>
-    </div>
 
-    <button class="btn-generate" onclick="generateCode()">Сгенерировать код ✨</button>
-
-    <div class="output-container" id="output-box">
-        <label>Готовый код для Genially:</label>
-        <div class="code-wrapper">
-            <textarea id="code-output" readonly></textarea>
-            <button class="btn-copy" onclick="copyCode()">КОПИРОВАТЬ</button>
-        </div>
-        <div id="copy-msg" class="success-msg">✓ Код успешно скопирован!</div>
-    </div>
-</div>
-
-<script>
-    function generateCode() {
-        const q = document.getElementById('q-input').value || 'Вопрос?';
-        const a = document.getElementById('a-input').value || 'ответ';
-        const t = document.getElementById('t-input').value;
-        const type = document.getElementById('type-input').value;
-
-        // Генерация кода с учетом вашей текущей структуры
-        const code = `const iframes = document.querySelectorAll('iframe');
-iframes.forEach(ifrm => {
-    ifrm.contentWindow.postMessage({
-        type: 'openTask',
-        q: '${q.replace(/'/g, "\\'")}',
-        a: '${a.replace(/'/g, "\\'")}',
-        time: ${t},
-        shopType: '${type}'
-    }, '*');
-});`;
-
-        document.getElementById('code-output').value = code;
-        document.getElementById('output-box').style.display = 'block';
-    }
-
-    function copyCode() {
-        const copyText = document.getElementById("code-output");
-        copyText.select();
-        document.execCommand("copy");
+        <button id="gen-btn" onclick="generate()">Сгенерировать код ✨</button>
         
-        const msg = document.getElementById("copy-msg");
-        msg.style.display = "block";
-        setTimeout(() => { msg.style.display = "none"; }, 2500);
-    }
-</script>
+        <div id="result" class="result-container">
+            <label>Код для вставки в Genially:</label>
+            <div class="code-wrapper">
+                <button id="copy-btn" onclick="copyCode()">КОПИРОВАТЬ</button>
+                <code id="out"></code>
+            </div>
+        </div>
+    </div>
 
+    <script>
+        let base64Image = "";
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const preview = document.getElementById('preview-img');
+
+        dropZone.onclick = () => fileInput.click();
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('hover'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('hover');
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('hover');
+            handleFile(e.dataTransfer.files[0]);
+        };
+
+        fileInput.onchange = (e) => handleFile(e.target.files[0]);
+
+        function handleFile(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                base64Image = e.target.result;
+                preview.src = base64Image;
+                preview.style.display = "block";
+                dropZone.innerText = "Картинка готова ✅";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function generate() {
+            const q = document.getElementById('q').value;
+            const a = document.getElementById('a').value;
+            const type = document.getElementById('type').value;
+            const time = document.getElementById('timer').value;
+            const color = document.getElementById('ui-color').value;
+            const url = "https://sun-asana.github.io/fashion-quest/index.html";
+            
+            // Код для Genially с поддержкой картинок и цвета
+            const code = `<div style="width:100%;height:100%"><iframe src="${url}" style="width:100%;height:100%;border:none;position:fixed;top:0;left:0;pointer-events:none;z-index:9999" id="fq-engine"></iframe><button style="background:${color};color:#fff;border:none;padding:15px 30px;border-radius:50px;font-family:sans-serif;font-weight:700;cursor:pointer;pointer-events:auto;box-shadow: 0 4px 15px rgba(0,0,0,0.2)" onclick="const e=document.getElementById('fq-engine');e.style.pointerEvents='auto';e.contentWindow.postMessage({type:'openTask',q:'${q.replace(/'/g, "\\'")}',a:'${a.replace(/'/g, "\\'")}',time:${time},img:'${base64Image}',shopType:'${type}',themeColor:'${color}'},'*')">✨ Начать задание ✨</button></div>`;
+            
+            document.getElementById('out').innerText = code;
+            document.getElementById('result').style.display = 'block';
+        }
+
+        function copyCode() {
+            const codeText = document.getElementById('out').innerText;
+            const btn = document.getElementById('copy-btn');
+            navigator.clipboard.writeText(codeText).then(() => {
+                btn.innerText = "ГОТОВО!";
+                setTimeout(() => btn.innerText = "КОПИРОВАТЬ", 2000);
+            });
+        }
+    </script>
 </body>
 </html>
