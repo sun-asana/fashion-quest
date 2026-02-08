@@ -309,8 +309,19 @@ window.onload = function() {
         }
 
         function tryOn(id, price, type) {
+            // Если вещь уже куплена ИЛИ покупка прошла успешно
             if (window.FQ.inventory.includes(id) || window.FQ.buyItem(id, price)) {
-                if(!window.FQ.inventory.includes(id)) document.getElementById('sound-coin').play();
+                
+                // Звук монеток только при первой покупке
+                if(!window.FQ.inventory.includes(id)) {
+                    document.getElementById('sound-coin').play();
+                }
+
+                // ПРИНУДИТЕЛЬНОЕ СОХРАНЕНИЕ (чтобы Genially не забыл)
+                // Обновляем список инвентаря в памяти сразу после покупки/надевания
+                localStorage.setItem('fq_inventory', JSON.stringify(window.FQ.inventory));
+                localStorage.setItem('fq_money', window.FQ.money);
+
                 refreshBalance();
                 apply(id, type);
                 openShop(type);
