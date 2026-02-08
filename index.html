@@ -178,42 +178,39 @@ window.addEventListener('message', function(event) {
         // 1. ОДЕВАЕМ КУКЛУ ПРИ ЗАГРУЗКЕ
 // Замени старый блок на этот, если хочешь СБРАСЫВАТЬ деньги при каждом запуске
 window.onload = function() {
-    // Мы принудительно ставим 0 вместо загрузки из памяти
-    window.FQ.money = 0; 
-    localStorage.setItem('fq_money', 0); // Сбрасываем и в памяти тоже
+    // 1. Полный сброс денег принудительно
+    if (window.FQ) {
+        window.FQ.money = 0;
+        localStorage.setItem('fq_money', 0);
+    }
     
-    // А одежду оставляем! Пусть кукла будет одета в то, что уже купили
+    // 2. Загружаем купленные вещи (чтобы кукла не стояла раздетой)
     const saved = localStorage.getItem('fq_inventory');
     window.FQ.inventory = saved ? JSON.parse(saved) : [];
+    
+    // 3. Обновляем цифру на экране
     refreshBalance();
     
-    // ... далее твой код с попытками одевания (reDressInterval) ...
-};
-            
-            // 3. УСИЛЕННОЕ ОДЕВАНИЕ
-            // Будем пробовать одеть куклу в течение 5 секунд, пока она не появится
-            let attempts = 0;
-            const reDressInterval = setInterval(() => {
-                let allApplied = true;
-                
-                window.FQ.inventory.forEach(id => {
-                    const type = id.split('_')[0];
-                    const img = document.getElementById('layer-' + type);
-                    
-                    if (img) {
-                        apply(id, type);
-                    } else {
-                        allApplied = false; // Если хоть один слой не найден, попробуем еще раз
-                    }
-                });
+    // 4. Пытаемся одеть куклу
+    let attempts = 0;
+    const reDressInterval = setInterval(() => {
+        let allApplied = true;
+        if (window.FQ.inventory.length === 0) {
+            clearInterval(reDressInterval);
+            return;
+        }
+        
+        window.FQ.inventory.forEach(id => {
+            const type = id.split('_')[0];
+            const img = document.getElementById('layer-' + type);
+            if (img) { apply(id, type); } 
+            else { allApplied = false; }
+        });
 
-                attempts++;
-                // Если всё надели или прошло 5 секунд — останавливаемся
-                if (allApplied && window.FQ.inventory.length > 0 || attempts > 25) {
-                    clearInterval(reDressInterval);
-                }
-            }, 200);
-        };
+        attempts++;
+        if (allApplied || attempts > 25) clearInterval(reDressInterval);
+    }, 200);
+};
 
         function startTask(data) {
             timeLeft = data.time;
