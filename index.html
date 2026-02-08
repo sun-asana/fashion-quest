@@ -176,17 +176,19 @@ window.addEventListener('message', function(event) {
         }
 
         // 1. ОДЕВАЕМ КУКЛУ ПРИ ЗАГРУЗКЕ
+// Замени старый блок на этот, если хочешь СБРАСЫВАТЬ деньги при каждом запуске
 window.onload = function() {
-            // 1. Пытаемся восстановить баланс (если он был в памяти)
-            // Если хочешь, чтобы деньги сохранялись между слайдами, 
-            // замени window.FQ.money = 0; на код ниже:
-            const savedMoney = localStorage.getItem('fq_money');
-            window.FQ.money = savedMoney ? parseInt(savedMoney) : 0;
-            
-            // 2. Загружаем инвентарь
-            const saved = localStorage.getItem('fq_inventory');
-            window.FQ.inventory = saved ? JSON.parse(saved) : [];
-            refreshBalance();
+    // Мы принудительно ставим 0 вместо загрузки из памяти
+    window.FQ.money = 0; 
+    localStorage.setItem('fq_money', 0); // Сбрасываем и в памяти тоже
+    
+    // А одежду оставляем! Пусть кукла будет одета в то, что уже купили
+    const saved = localStorage.getItem('fq_inventory');
+    window.FQ.inventory = saved ? JSON.parse(saved) : [];
+    refreshBalance();
+    
+    // ... далее твой код с попытками одевания (reDressInterval) ...
+};
             
             // 3. УСИЛЕННОЕ ОДЕВАНИЕ
             // Будем пробовать одеть куклу в течение 5 секунд, пока она не появится
