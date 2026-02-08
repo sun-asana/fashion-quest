@@ -176,40 +176,30 @@ window.addEventListener('message', function(event) {
         }
 
         // 1. ОДЕВАЕМ КУКЛУ ПРИ ЗАГРУЗКЕ
-// Замени старый блок на этот, если хочешь СБРАСЫВАТЬ деньги при каждом запуске
+
 window.onload = function() {
-    // 1. Полный сброс денег принудительно
+    // 1. Полный сброс денег и вещей в коде и в памяти браузера
     if (window.FQ) {
         window.FQ.money = 0;
+        window.FQ.inventory = [];
         localStorage.setItem('fq_money', 0);
+        localStorage.setItem('fq_inventory', JSON.stringify([]));
     }
     
-    // 2. Загружаем купленные вещи (чтобы кукла не стояла раздетой)
-    const saved = localStorage.getItem('fq_inventory');
-    window.FQ.inventory = saved ? JSON.parse(saved) : [];
-    
-    // 3. Обновляем цифру на экране
+    // 2. Сразу обновляем счетчик на 0
     refreshBalance();
     
-    // 4. Пытаемся одеть куклу
-    let attempts = 0;
-    const reDressInterval = setInterval(() => {
-        let allApplied = true;
-        if (window.FQ.inventory.length === 0) {
-            clearInterval(reDressInterval);
-            return;
+    // 3. Скрываем все слои одежды, которые могли остаться от прошлой игры
+    const layers = ['bottom', 'top', 'shoes', 'acc', 'hat'];
+    layers.forEach(type => {
+        const img = document.getElementById('layer-' + type);
+        if (img) {
+            img.src = ""; // Убираем путь к картинке
+            img.style.display = 'none'; // Прячем слой
         }
-        
-        window.FQ.inventory.forEach(id => {
-            const type = id.split('_')[0];
-            const img = document.getElementById('layer-' + type);
-            if (img) { apply(id, type); } 
-            else { allApplied = false; }
-        });
+    });
 
-        attempts++;
-        if (allApplied || attempts > 25) clearInterval(reDressInterval);
-    }, 200);
+    console.log("Состояние сброшено: кукла раздета, баланс 0.");
 };
 
         function startTask(data) {
