@@ -178,28 +178,50 @@ window.addEventListener('message', function(event) {
         // 1. ОДЕВАЕМ КУКЛУ ПРИ ЗАГРУЗКЕ
 
 window.onload = function() {
-    // 1. Полный сброс денег и вещей в коде и в памяти браузера
-    if (window.FQ) {
+    // 1. Проверяем, это самый первый запуск или переход между слайдами?
+    // Используем sessionStorage, который очищается только при закрытии всей вкладки
+    const isFirstRun = !sessionStorage.getItem('fq_session_active');
+
+    if (isFirstRun) {
+        // Если это первый запуск — чистим всё принудительно
         window.FQ.money = 0;
         window.FQ.inventory = [];
         localStorage.setItem('fq_money', 0);
         localStorage.setItem('fq_inventory', JSON.stringify([]));
+        
+        // Помечаем, что сессия началась
+        sessionStorage.setItem('fq_session_active', 'true');
+        console.log("Первый запуск: всё обнулено");
+    } else {
+        // Если мы просто перешли на другой слайд — загружаем то, что было
+        const savedMoney = localStorage.getItem('fq_money');
+        const savedInv = localStorage.getItem('fq_inventory');
+        
+        window.FQ.money = savedMoney ? parseInt(savedMoney) : 0;
+        window.FQ.inventory = savedInv ? JSON.parse(savedInv) : [];
+        console.log("Переход между слайдами: данные восстановлены");
     }
-    
-    // 2. Сразу обновляем счетчик на 0
+
+    // 2. Обновляем экран
     refreshBalance();
-    
-    // 3. Скрываем все слои одежды, которые могли остаться от прошлой игры
+
+    // 3. Сначала «раздеваем» всех, чтобы не было наслоений
     const layers = ['bottom', 'top', 'shoes', 'acc', 'hat'];
     layers.forEach(type => {
         const img = document.getElementById('layer-' + type);
         if (img) {
-            img.src = ""; // Убираем путь к картинке
-            img.style.display = 'none'; // Прячем слой
+            img.src = "";
+            img.style.display = 'none';
         }
     });
 
-    console.log("Состояние сброшено: кукла раздета, баланс 0.");
+    // 4. А теперь надеваем то, что уже было куплено (если есть)
+    if (window.FQ.inventory.length > 0) {
+        window.FQ.inventory.forEach(id => {
+            const type = id.split('_')[0];
+            apply(id, type);
+        });
+    }
 };
 
         function startTask(data) {
