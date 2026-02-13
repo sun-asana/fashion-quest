@@ -11,14 +11,23 @@
             --bg-gradient: linear-gradient(135deg, #4a69bd 0%, #10ac84 100%);
             --text-font: 'Arial', sans-serif;
             --text-color: #333333;
+            /* Новое: Переменная прозрачности фона */
+            --bg-opacity: 1; 
         }
 
         body {
             transition: background 0.5s ease;
+            background-color: rgba(255, 255, 255, var(--bg-opacity));
             background-attachment: fixed;
             background-position: center;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
+        /* Полупрозрачная плашка с эффектом стекла и неоном */
         #fq-modal {
             max-width: 800px !important;
             width: 95% !important;
@@ -38,6 +47,7 @@
         
         #character-preview { 
             flex-shrink: 0; 
+            /* Абстрактный фон за куклой */
             background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0.1) 100%), url('assets/backgrounds/char_bg.png'); 
             background-size: cover;
             border-radius: 20px; 
@@ -48,6 +58,7 @@
         }
 
         .char-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
+        .char-layer[src=""], .char-layer:not([src]) { display: none; }
 
         #modal-content { flex-grow: 1; max-height: 400px; overflow-y: auto; padding-right: 10px; }
         
@@ -63,10 +74,12 @@
             border-left: 5px solid var(--neon-color);
         }
         
+        /* Неоновые градиентные кнопки */
         .shop-item button, #modal-btn {
             background: var(--bg-gradient) !important;
             color: white !important; border: none; padding: 12px 20px; border-radius: 50px;
             cursor: pointer; font-weight: bold; transition: 0.3s;
+            font-family: var(--text-font);
         }
 
         .shop-item button:hover, #modal-btn:hover {
@@ -77,7 +90,7 @@
         #error-toast {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             background: #e74c3c; color: white; padding: 10px 25px; border-radius: 50px;
-            font-family: sans-serif; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 10000;
+            font-family: var(--text-font); font-weight: bold; opacity: 0; transition: 0.3s; z-index: 10000;
         }
         #error-toast.show { opacity: 1; top: 40px; }
     </style>
@@ -118,15 +131,24 @@
         window.addEventListener('message', function(event) {
             if (event.data && event.data.type === 'openTask') {
                 const root = document.documentElement;
+                
+                // Применяем стили из сообщения
                 if (event.data.accentColor) root.style.setProperty('--accent-color', event.data.accentColor);
                 if (event.data.neonColor) root.style.setProperty('--neon-color', event.data.neonColor);
                 if (event.data.fontFamily) root.style.setProperty('--text-font', event.data.fontFamily);
                 if (event.data.textColor) root.style.setProperty('--text-color', event.data.textColor);
                 if (event.data.btnGradient) root.style.setProperty('--bg-gradient', event.data.btnGradient);
                 
-                if (event.data.bgImage) {
-                    document.body.style.backgroundImage = `url('assets/backgrounds/${event.data.bgImage}.png')`;
-                    document.body.style.backgroundSize = 'cover';
+                // Настройка прозрачности или фона
+                if (event.data.transparent === true) {
+                    root.style.setProperty('--bg-opacity', '0');
+                    document.body.style.backgroundImage = 'none';
+                } else {
+                    root.style.setProperty('--bg-opacity', '1');
+                    if (event.data.bgImage) {
+                        document.body.style.backgroundImage = `url('assets/backgrounds/${event.data.bgImage}.png')`;
+                        document.body.style.backgroundSize = 'cover';
+                    }
                 }
                 startTask(event.data);
             }
@@ -150,6 +172,91 @@
             }, 300);
         };
 
+        function startTask(data) {
+            timeLeft = data.time || 30;
+            currentReward = 200;
+            document.getElementById('timer-display').style.display = 'block';
+            document.getElementById('timer-display').innerText = `⏳ Время: ${timeLeft} сек`;
+
+            clearInterval(timerId);
+            timerId = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = `⏳ Время: ${timeLeft} сек`;
+                if(timeLeft <= 0) {
+                    clearInterval(timerId);
+                    document.getElementById('timer-display').innerText = "⌛ Время вышло! Награда снижена.";
+                    currentReward = 100;
+                }
+            }, 1000);
+
+            openTaskUI(data);
+        }
+
+        function openTaskUI(data) {
+            document.getElementById('modal-title').innerText = "Задание";
+            document.getElementById('character-preview').style.display = 'none';
+            document.getElementById('fq-overlay').classList.remove('hidden');
+            
+            let imgHtml = data.img ? `<img src="${data.img}" style="max-width:100%; max-height:250px; display:block; margin: 0 auto 15px; border-radius:15px;">` : '';
+            document.getElementById('modal-content').innerHTML = `
+                ${imgHtml}
+                <p style="text-align:center; font-size: 18px;">${data.q}</p>
+                <input type="text" id="user-answer" style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--neon-color); text-align:center;" placeholder="Введите ответ...">
+            `;
+            
+            document.getElementById('modal-btn').innerText = "Проверить ответ";
+            document.getElementById('modal-btn').onclick = () => {
+                const ans = document.getElementById('user-answer').value;
+                if(ans && ans.toLowerCase().trim() === data.a.toLowerCase().trim()) {
+                    clearInterval(timerId);
+                    window.FQ.addMoney(currentReward);
+                    refreshBalance();
+                    openShop(data.shopType);
+                } else {
+                    showError("Неверно! Попробуй еще раз.");
+                }
+            };
+        }
+
+        function openShop(filterType) {
+            document.getElementById('timer-display').style.display = 'none';
+            document.getElementById('character-preview').style.display = 'block';
+            
+            const typeNames = {'top':'Верх','bottom':'Низ','shoes':'Обувь','hat':'Шапка','acc':'Аксессуар'};
+            document.getElementById('modal-title').innerText = typeNames[filterType] || "Магазин";
+            
+            const allItems = [
+                {id: 'top_1', name: '💎 Элитная вещь', price: 200, type: 'top'},
+                {id: 'top_2', name: '👕 Базовая вещь', price: 100, type: 'top'},
+                {id: 'bottom_1', name: '💎 Элитная вещь', price: 200, type: 'bottom'},
+                {id: 'bottom_2', name: '🩳 Базовая вещь', price: 100, type: 'bottom'},
+                {id: 'shoes_1', name: '💎 Элитная вещь', price: 200, type: 'shoes'},
+                {id: 'shoes_2', name: '👟 Базовая вещь', price: 100, type: 'shoes'},
+                {id: 'hat_1', name: '💎 Элитная вещь', price: 200, type: 'hat'},
+                {id: 'hat_2', name: '🧢 Базовая вещь', price: 100, type: 'hat'},
+                {id: 'acc_1', name: '💎 Элитная вещь', price: 200, type: 'acc'},
+                {id: 'acc_2', name: '👓 Базовая вещь', price: 100, type: 'acc'}
+            ];
+
+            const items = allItems.filter(i => i.type === filterType);
+            let html = '';
+            items.forEach(item => {
+                const bought = window.FQ.inventory.includes(item.id);
+                html += `<div class="shop-item">
+                    <span><b>${item.name}</b><br><small>${item.price} 💰</small></span>
+                    <button onclick="tryOn('${item.id}', ${item.price}, '${item.type}')">
+                        ${bought ? 'Надето' : 'Купить'}
+                    </button>
+                </div>`;
+            });
+            document.getElementById('modal-content').innerHTML = html;
+            document.getElementById('modal-btn').innerText = "Продолжить путь ✨";
+            document.getElementById('modal-btn').onclick = () => {
+                document.getElementById('fq-overlay').classList.add('hidden');
+                window.parent.postMessage({type: 'close'}, '*');
+            };
+        }
+
         function apply(id, type) {
             const cleanType = type || id.split('_')[0]; 
             const img = document.getElementById('layer-' + cleanType);
@@ -171,14 +278,12 @@
         }
 
         function refreshBalance() { document.getElementById('balance-val').innerText = window.FQ.money; }
+        
         function showError(text) {
             const t = document.getElementById('error-toast');
             t.innerText = text; t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 2000);
         }
-
-        // Остальные функции (startTask, openTaskUI, openShop) остаются прежними
-        // ... (из твоего предыдущего рабочего кода)
     </script>
 </body>
 </html>
