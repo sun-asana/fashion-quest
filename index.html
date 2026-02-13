@@ -247,14 +247,21 @@
             
             // Список предметов (подтяни свои ID из ассетов)
            const allItems = [
+    // ВЕРХ
     {id: 'top_1', name: '💎 Элитная вещь', price: 200, type: 'top'},
     {id: 'top_2', name: '📦 Базовая вещь', price: 100, type: 'top'},
+    // НИЗ
     {id: 'bottom_1', name: '💎 Элитная вещь', price: 200, type: 'bottom'},
     {id: 'bottom_2', name: '📦 Базовая вещь', price: 100, type: 'bottom'},
+    // ОБУВЬ
     {id: 'shoes_1', name: '💎 Элитная вещь', price: 200, type: 'shoes'},
     {id: 'shoes_2', name: '📦 Базовая вещь', price: 100, type: 'shoes'},
+    // ШЛЯПЫ
     {id: 'hat_1', name: '💎 Элитная вещь', price: 200, type: 'hat'},
-    {id: 'acc_1', name: '💎 Элитная вещь', price: 200, type: 'acc'}
+    {id: 'hat_2', name: '📦 Базовая вещь', price: 100, type: 'hat'},
+    // АКСЕССУАРЫ
+    {id: 'acc_1', name: '💎 Элитная вещь', price: 200, type: 'acc'},
+    {id: 'acc_2', name: '📦 Базовая вещь', price: 100, type: 'acc'}
 ];
 
             const items = allItems.filter(i => i.type === filterType);
