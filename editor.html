@@ -137,49 +137,56 @@
         reader.readAsDataURL(file);
     }
 
-    function updatePreview() {
-        const neon = document.getElementById('neonColor').value;
-        const grad = document.getElementById('btnGradient').value;
-        const font = document.getElementById('fontFamily').value;
-        const bg = document.getElementById('bgImage').value;
+function updatePreview() {
+    const neon = document.getElementById('neonColor').value;
+    const grad = document.getElementById('btnGradient').value;
+    const font = document.getElementById('fontFamily').value;
+    const bg = document.getElementById('bgImage').value;
 
-        document.documentElement.style.setProperty('--p-neon', neon);
-        document.documentElement.style.setProperty('--p-grad', grad);
-        
-        const modal = document.getElementById('mock-modal');
-        modal.style.fontFamily = font;
-        document.getElementById('p-question').innerText = document.getElementById('q').value;
-        if (window.MathJax) { MathJax.typeset(); }
-        document.querySelector('.mock-btn').style.background = grad;
-        
-        const bgPanel = document.getElementById('preview-bg');
-        bgPanel.style.backgroundImage = bg ? `url('assets/backgrounds/${bg}.png')` : "none";
-        bgPanel.style.opacity = bg ? "0.6" : "0";
-    }
+    document.documentElement.style.setProperty('--p-neon', neon);
+    document.documentElement.style.setProperty('--p-grad', grad);
+    
+    // Обновляем прозрачную кнопку в превью
+    const startBtnMock = document.getElementById('genially-btn-mock');
+    startBtnMock.style.borderColor = neon;
+    startBtnMock.style.color = neon;
+    startBtnMock.style.background = `${neon}33`; // 33 — это прозрачность 20% в HEX
 
-    function generateCode() {
-        const data = {
-            type: 'openTask',
-            q: document.getElementById('q').value,
-            a: document.getElementById('a').value,
-            img: uploadedImgBase64,
-            time: 30,
-            shopType: document.getElementById('shopType').value,
-            fontFamily: document.getElementById('fontFamily').value,
-            neonColor: document.getElementById('neonColor').value,
-            btnGradient: document.getElementById('btnGradient').value,
-            bgImage: document.getElementById('bgImage').value,
-            transparent: document.getElementById('bgImage').value === ""
-        };
+    const modal = document.getElementById('mock-modal');
+    modal.style.fontFamily = font;
+    document.getElementById('p-question').innerText = document.getElementById('q').value;
+    if (window.MathJax) { MathJax.typeset(); }
+    document.querySelector('.mock-btn').style.background = grad;
+    
+    const bgPanel = document.getElementById('preview-bg');
+    bgPanel.style.backgroundImage = bg ? `url('assets/backgrounds/${bg}.png')` : "none";
+    bgPanel.style.opacity = bg ? "0.6" : "0";
+}
 
-        const code = `<script>(function(){const s=()=>window.parent.postMessage(${JSON.stringify(data)},'*');s();setTimeout(s,500);})();<\/script>`;
+function generateCode() {
+    const neon = document.getElementById('neonColor').value;
+    const data = {
+        type: 'openTask',
+        q: document.getElementById('q').value,
+        a: document.getElementById('a').value,
+        img: uploadedImgBase64,
+        time: 30,
+        shopType: document.getElementById('shopType').value,
+        fontFamily: document.getElementById('fontFamily').value,
+        neonColor: neon, // Используем этот цвет для кнопки "Начать"
+        btnGradient: document.getElementById('btnGradient').value,
+        bgImage: document.getElementById('bgImage').value,
+        transparent: document.getElementById('bgImage').value === ""
+    };
 
-        navigator.clipboard.writeText(code).then(() => {
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        });
-    }
+    const code = `<script>(function(){const s=()=>window.parent.postMessage(${JSON.stringify(data)},'*');s();setTimeout(s,500);})();<\/script>`;
+
+    navigator.clipboard.writeText(code).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    });
+}
 
     const dz = document.getElementById('drop-zone');
     dz.ondragover = () => { dz.classList.add('hover'); return false; };
