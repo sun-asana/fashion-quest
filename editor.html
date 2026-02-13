@@ -175,25 +175,28 @@
         bgPanel.style.opacity = bg ? "0.6" : "0";
     }
 
-    function generateCode() {
-        const data = {
-            type: 'openTask',
-            q: document.getElementById('q').value,
-            a: document.getElementById('a').value,
-            img: uploadedImgBase64,
-            time: parseInt(document.getElementById('time').value) || 30,
-            shopType: document.getElementById('shopType').value,
-            fontFamily: document.getElementById('fontFamily').value,
-            textColor: document.getElementById('textColor').value,
-            neonColor: document.getElementById('neonColor').value,
-            btnGradient: document.getElementById('btnGradient').value,
-            bgImage: document.getElementById('bgImage').value,
-            transparent: document.getElementById('bgImage').value === ""
-        };
+function generateCode() {
+    const data = {
+        type: 'openTask',
+        q: document.getElementById('q').value,
+        a: document.getElementById('a').value,
+        img: uploadedImgBase64,
+        time: parseInt(document.getElementById('time').value) || 30,
+        shopType: document.getElementById('shopType').value,
+        fontFamily: document.getElementById('fontFamily').value,
+        textColor: document.getElementById('textColor').value,
+        neonColor: document.getElementById('neonColor').value,
+        btnGradient: document.getElementById('btnGradient').value,
+        bgImage: document.getElementById('bgImage').value,
+        transparent: document.getElementById('bgImage').value === ""
+    };
 
-        const bgUrl = data.bgImage ? `https://raw.githubusercontent.com/sun-asana/fashion-quest/main/assets/backgrounds/${data.bgImage}.png` : "";
-        
-        const code = `<iframe id="fq-iframe" 
+    const bgUrl = data.bgImage ? `https://raw.githubusercontent.com/sun-asana/fashion-quest/main/assets/backgrounds/${data.bgImage}.png` : "";
+    
+    // Создаем уникальный ID для каждого задания, чтобы они не конфликтовали
+    const uniqueId = 'fq-' + Math.random().toString(36).substr(2, 9);
+
+    const code = `<iframe id="${uniqueId}" 
     src="https://sun-asana.github.io/fashion-quest/index.html" 
     style="width:100%; height:800px; border:none; background:transparent; position:relative; z-index:2;" 
     allowtransparency="true">
@@ -202,42 +205,51 @@
 <script>
 (function() {
     const taskData = ${JSON.stringify(data)};
-    const ifr = document.getElementById('fq-iframe');
+    const ifr = document.getElementById('${uniqueId}');
     const bg = "${bgUrl}";
     
-    function deepClean() {
+    function cleanTargetPage() {
+        // Ищем только ближайшие родительские элементы именно этого iframe
         let el = ifr;
         while (el && el !== document.body) {
-            el.style.backgroundColor = 'transparent';
-            el.style.backgroundImage = 'none';
-            el.style.minHeight = '100vh';
-            if (bg && (el.classList.contains('genially-view-item') || el.classList.contains('genially-canvas'))) {
-                el.style.background = "url('" + bg + "') center center / cover no-repeat fixed";
+            // Если нашли контейнер слайда Genially
+            if (el.classList.contains('genially-view-item')) {
+                // Очищаем фон только ЭТОГО слайда
+                el.style.backgroundColor = 'transparent';
+                el.style.backgroundImage = 'none';
+                
+                // Если задан наш фон, ставим его только этому слайду
+                if (bg) {
+                    el.style.background = "url('" + bg + "') center center / cover no-repeat fixed";
+                }
+                
+                // Нашли нужный контейнер — выходим из цикла, дальше (выше) идти не нужно
+                break; 
             }
             el = el.parentElement;
         }
-        if (bg) document.body.style.background = "url('" + bg + "') center center / cover no-repeat fixed";
     }
 
     ifr.onload = function() {
-        deepClean();
+        cleanTargetPage();
         setTimeout(() => {
             ifr.contentWindow.postMessage(taskData, '*');
         }, 600);
     };
     
-    deepClean();
-    setTimeout(deepClean, 1500);
-    setTimeout(deepClean, 3000);
+    // Запускаем проверку несколько раз, так как Genially подгружает слои постепенно
+    cleanTargetPage();
+    setTimeout(cleanTargetPage, 1000);
+    setTimeout(cleanTargetPage, 3000);
 })();
 <\/script>`;
 
-        navigator.clipboard.writeText(code).then(() => {
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        });
-    }
+    navigator.clipboard.writeText(code).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    });
+}
 
     const dz = document.getElementById('drop-zone');
     dz.ondragover = () => { dz.classList.add('hover'); return false; };
