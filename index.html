@@ -17,23 +17,21 @@
             --bg-opacity: 1; 
         }
 
-body {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    overflow: hidden;
-    /* Убираем любые намеки на белый фон для Genially */
-    background-color: transparent !important; 
-    background: transparent !important;
-    /* Анимация смены фона (когда фон всё же задан в редакторе) */
-    transition: background 0.5s ease;
-}
-        /* Та самая стильная прозрачная кнопка */
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            background-color: transparent !important; 
+            background: transparent !important;
+            transition: background 0.5s ease;
+        }
+
         #start-task-btn {
-            display: none; /* Скрыта, пока не получили данные */
+            display: none; 
             padding: 20px 40px;
             font-size: 24px;
             font-family: var(--text-font);
@@ -91,7 +89,6 @@ body {
         .char-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
         .hidden { display: none !important; }
 
-        /* ... остальные твои стили без изменений ... */
         #modal-content { flex-grow: 1; max-height: 400px; overflow-y: auto; font-family: var(--text-font); color: var(--text-color); }
         .shop-item { background: rgba(255,255,255,0.6); margin-bottom: 12px; padding: 15px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--neon-color); }
         .shop-item button, #modal-btn { background: var(--bg-gradient) !important; color: white !important; border: none; padding: 12px 25px; border-radius: 50px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
@@ -134,47 +131,50 @@ body {
         let timeLeft = 0, timerId = null, currentReward = 0;
         let cachedData = null;
 
-        // ЕДИНЫЙ ОБРАБОТЧИК СООБЩЕНИЙ
-        window.addEventListener('message', function(event) {
-            const data = event.data;
-            if (data && data.type === 'openTask') {
-                console.log("Данные получены:", data);
-                cachedData = data; // Сохраняем, чтобы использовать при клике на кнопку
-                
-                const root = document.documentElement;
-                
-                // 1. Применяем настройки из редактора
-                if (data.neonColor) {
-                    root.style.setProperty('--neon-color', data.neonColor);
-                }
-                if (data.fontFamily) root.style.setProperty('--text-font', data.fontFamily);
-                if (data.btnGradient) root.style.setProperty('--bg-gradient', data.btnGradient);
-                
-                // 2. Настраиваем фон
-                if (data.transparent) {
-                    root.style.setProperty('--bg-opacity', '0');
-                    document.body.style.backgroundImage = 'none';
-                } else if (data.bgImage) {
-                    root.style.setProperty('--bg-opacity', '1');
-                    document.body.style.backgroundImage = `url('assets/backgrounds/${data.bgImage}.png')`;
-                    document.body.style.backgroundSize = 'cover';
-                }
-
-                // 3. Показываем ту самую кнопку "Начать"
-                const startBtn = document.getElementById('start-task-btn');
-                startBtn.style.display = 'block';
-                // Делаем фон кнопки чуть прозрачным цветом неона (HEX + 33 = 20% прозрачности)
-                startBtn.style.background = data.neonColor + "33"; 
-                
-                startBtn.onclick = () => {
-                    startBtn.style.display = 'none';
-                    startTask(data);
-                };
+        // Функция обработки входящих данных (общая для всех способов)
+        function processTaskData(data) {
+            if (!data || data.type !== 'openTask') return;
+            
+            console.log("Применяем данные:", data);
+            cachedData = data;
+            
+            const root = document.documentElement;
+            if (data.neonColor) root.style.setProperty('--neon-color', data.neonColor);
+            if (data.fontFamily) root.style.setProperty('--text-font', data.fontFamily);
+            if (data.btnGradient) root.style.setProperty('--bg-gradient', data.btnGradient);
+            
+            if (data.transparent) {
+                document.body.style.backgroundImage = 'none';
+            } else if (data.bgImage) {
+                document.body.style.backgroundImage = `url('assets/backgrounds/${data.bgImage}.png')`;
+                document.body.style.backgroundSize = 'cover';
             }
-        }, false);
+
+            const startBtn = document.getElementById('start-task-btn');
+            startBtn.style.display = 'block';
+            startBtn.style.background = data.neonColor + "33"; 
+            
+            startBtn.onclick = () => {
+                startBtn.style.display = 'none';
+                startTask(data);
+            };
+        }
+
+        // Слушаем сообщения (от скрипта)
+        window.addEventListener('message', (event) => processTaskData(event.data), false);
 
         window.onload = function() {
-            // Инициализация баланса
+            // 1. Проверка данных в URL (от iframe)
+            const urlParams = new URLSearchParams(window.location.search);
+            const dataParam = urlParams.get('data');
+            if (dataParam) {
+                try {
+                    const decodedData = JSON.parse(decodeURIComponent(escape(atob(dataParam))));
+                    processTaskData(decodedData);
+                } catch (e) { console.error("Ошибка URL данных:", e); }
+            }
+
+            // 2. Инициализация баланса
             const isFirstRun = !sessionStorage.getItem('fq_session_active');
             if (isFirstRun) {
                 window.FQ.money = 0;
@@ -209,7 +209,6 @@ body {
                     currentReward = 100;
                 }
             }, 1000);
-
             openTaskUI(data);
         }
 
@@ -217,17 +216,13 @@ body {
             document.getElementById('modal-title').innerText = "ЗАДАНИЕ";
             document.getElementById('character-preview').style.display = 'none';
             document.getElementById('fq-overlay').classList.remove('hidden');
-            
             let imgHtml = data.img ? `<img src="${data.img}" style="max-width:100%; max-height:220px; display:block; margin: 0 auto 15px; border-radius:15px; border: 2px solid var(--neon-color);">` : '';
-            
             document.getElementById('modal-content').innerHTML = `
                 ${imgHtml}
                 <div id="question-text" style="text-align:center; font-size: 20px; margin-bottom: 20px;">${data.q}</div>
                 <input type="text" id="user-answer" style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--neon-color); text-align:center; font-size: 16px;" placeholder="Введите ваш ответ...">
             `;
-            
             if (window.MathJax) MathJax.typeset();
-            
             document.getElementById('modal-btn').innerText = "Проверить ответ";
             document.getElementById('modal-btn').onclick = () => {
                 const ans = document.getElementById('user-answer').value;
@@ -236,9 +231,7 @@ body {
                     window.FQ.addMoney(currentReward);
                     refreshBalance();
                     openShop(data.shopType);
-                } else {
-                    showError("Неверно! Попробуй еще раз.");
-                }
+                } else { showError("Неверно! Попробуй еще раз."); }
             };
         }
 
@@ -247,8 +240,6 @@ body {
             document.getElementById('character-preview').style.display = 'block';
             const typeNames = {'top':'ВЕРХ','bottom':'НИЗ','shoes':'ОБУВЬ','hat':'ШАПКА','acc':'АКСЕССУАРЫ'};
             document.getElementById('modal-title').innerText = typeNames[filterType] || "МАГАЗИН";
-            
-            // Здесь твой список предметов (allItems) остается таким же...
             const allItems = [
                 {id: 'top_1', name: '💎 Элитная вещь', price: 200, type: 'top'},
                 {id: 'top_2', name: '📦 Базовая вещь', price: 100, type: 'top'},
@@ -261,7 +252,6 @@ body {
                 {id: 'acc_1', name: '💎 Элитная вещь', price: 200, type: 'acc'},
                 {id: 'acc_2', name: '📦 Базовая вещь', price: 100, type: 'acc'}
             ];
-
             const items = allItems.filter(i => i.type === filterType);
             let html = '';
             items.forEach(item => {
@@ -273,12 +263,10 @@ body {
                     </button>
                 </div>`;
             });
-            
             document.getElementById('modal-content').innerHTML = html || '<p style="text-align:center">Пусто.</p>';
             document.getElementById('modal-btn').innerText = "Продолжить путь ✨";
             document.getElementById('modal-btn').onclick = () => {
                 document.getElementById('fq-overlay').classList.add('hidden');
-                window.parent.postMessage({type: 'close'}, '*');
             };
         }
 
