@@ -61,18 +61,30 @@
             box-shadow: 0 0 40px var(--neon-color);
         }
 
-        #fq-modal {
-            max-width: 800px !important;
-            width: 95% !important;
-            padding: 30px !important;
-            border-radius: 24px !important;
-            background: rgba(255, 255, 255, 0.9) !important;
-            backdrop-filter: blur(12px);
-            border: 2px solid var(--neon-color) !important;
-            box-shadow: 0 0 25px var(--neon-color), inset 0 0 15px var(--neon-color) !important;
-            position: relative;
-            z-index: 100;
-        }
+#fq-modal {
+    max-width: 800px !important;
+    width: 95% !important;
+    padding: 30px !important;
+    border-radius: 24px !important;
+    /* Теперь цвет фона зависит от переменной, по умолчанию белый с прозрачностью 0.8 */
+    background: rgba(255, 255, 255, var(--modal-opacity, 0.8)) !important; 
+    backdrop-filter: blur(12px);
+    border: 2px solid var(--neon-color) !important;
+    box-shadow: 0 0 25px var(--neon-color);
+    position: relative;
+    z-index: 100;
+}
+
+/* Убираем сильное затемнение заднего фона */
+#fq-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.2); /* Было 0.5, стало 0.2 — фон будет намного светлее */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99;
+}
 
         .game-container { 
             display: flex; align-items: center; gap: 30px; justify-content: center; 
@@ -140,33 +152,43 @@
 
         const GITHUB_RAW = "https://raw.githubusercontent.com/sun-asana/fashion-quest/main/";
 
-        function processTaskData(data) {
-            if (!data || data.type !== 'openTask') return;
-            
-            console.log("Применяем данные:", data);
-            cachedData = data;
-            
-            const root = document.documentElement;
-            if (data.neonColor) root.style.setProperty('--neon-color', data.neonColor);
-            if (data.fontFamily) root.style.setProperty('--text-font', data.fontFamily);
-            if (data.btnGradient) root.style.setProperty('--bg-gradient', data.btnGradient);
-            
-            if (data.transparent) {
-                document.body.style.background = 'transparent';
-            } else if (data.bgImage) {
-                const bgUrl = `${GITHUB_RAW}assets/backgrounds/${data.bgImage}.png`;
-                document.body.style.background = `url('${bgUrl}') center/cover no-repeat fixed transparent`;
-            }
+function processTaskData(data) {
+    if (!data || data.type !== 'openTask') return;
+    
+    console.log("Применяем данные:", data);
+    cachedData = data;
 
-            const startBtn = document.getElementById('start-task-btn');
-            startBtn.style.display = 'block';
-            startBtn.style.background = data.neonColor + "33"; 
+    const root = document.documentElement;
+    
+    // Применяем настройки из JSON
+    if (data.neonColor) root.style.setProperty('--neon-color', data.neonColor);
+    if (data.fontFamily) root.style.setProperty('--text-font', data.fontFamily);
+    if (data.btnGradient) root.style.setProperty('--bg-gradient', data.btnGradient);
+    
+    // Настройка прозрачности модального окна (от 0 до 1)
+    if (data.modalAlpha !== undefined) {
+        root.style.setProperty('--modal-opacity', data.modalAlpha);
+    } else {
+        root.style.setProperty('--modal-opacity', '0.8'); // Значение по умолчанию
+    }
             
-            startBtn.onclick = () => {
-                startBtn.style.display = 'none';
-                startTask(data);
-            };
-        }
+    // Настройка фона страницы
+    if (data.transparent) {
+        document.body.style.background = 'transparent';
+    } else if (data.bgImage) {
+        const bgUrl = `${GITHUB_RAW}assets/backgrounds/${data.bgImage}.png`;
+        document.body.style.background = `url('${bgUrl}') center/cover no-repeat fixed transparent`;
+    }
+
+    const startBtn = document.getElementById('start-task-btn');
+    startBtn.style.display = 'block';
+    startBtn.style.background = data.neonColor + "33"; 
+    
+    startBtn.onclick = () => {
+        startBtn.style.display = 'none';
+        startTask(data);
+    };
+}
 
         window.addEventListener('message', (event) => processTaskData(event.data), false);
 
