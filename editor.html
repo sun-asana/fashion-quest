@@ -173,13 +173,26 @@ function generateCode() {
         time: 30,
         shopType: document.getElementById('shopType').value,
         fontFamily: document.getElementById('fontFamily').value,
-        neonColor: neon, // Используем этот цвет для кнопки "Начать"
+        neonColor: neon,
         btnGradient: document.getElementById('btnGradient').value,
         bgImage: document.getElementById('bgImage').value,
         transparent: document.getElementById('bgImage').value === ""
     };
 
-    const code = `<script>(function(){const s=()=>window.parent.postMessage(${JSON.stringify(data)},'*');s();setTimeout(s,500);})();<\/script>`;
+    // НОВЫЙ СКРИПТ: он не только шлет данные, но и делает фон прозрачным
+    const code = `<script>
+(function(){
+    // Делаем фон прозрачным в Genially
+    const style = document.createElement('style');
+    style.innerHTML = 'html, body { background: transparent !important; }';
+    document.head.appendChild(style);
+    
+    const s = () => window.parent.postMessage(${JSON.stringify(data)}, '*');
+    s();
+    setTimeout(s, 500);
+    setTimeout(s, 1500);
+})();
+<\/script>`;
 
     navigator.clipboard.writeText(code).then(() => {
         const toast = document.getElementById('toast');
