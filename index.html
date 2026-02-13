@@ -297,20 +297,25 @@
         }
 
         // ФУНКЦИЯ КОНФЕТТИ
-        function launchFashionConfetti() {
+       function launchFashionConfetti() {
     var duration = 5 * 1000;
     var animationEnd = Date.now() + duration;
+
     var interval = setInterval(function() {
         var timeLeft = animationEnd - Date.now();
         if (timeLeft <= 0) return clearInterval(interval);
+
         confetti({
-            particleCount: 40,
-            spread: 90,
-            origin: { y: 0.6 },
+            particleCount: 25,     // Чуть меньше частиц за один «выстрел» для легкости
+            startVelocity: 35,     // Меньше начальная скорость (летят медленнее)
+            spread: 70,            // Угол разлета
+            origin: { x: 0.5, y: 1 }, // ТОЧКА ЗАПУСКА: центр по горизонтали, самый НИЗ экрана
+            scalar: 0.7,           // РАЗМЕР: 0.7 делает частицы более мелкими и аккуратными
+            gravity: 0.8,          // ГРАВИТАЦИЯ: заставляет их медленнее падать вниз
             colors: ['#00f2ff', '#ff00ff', '#ffffff'],
-            zIndex: 9999 // ТЕПЕРЬ ОНИ БУДУТ ПОВЕРХ ОКНА
+            zIndex: 10000          // Чтобы были поверх всех окон
         });
-    }, 250);
+    }, 300); // Запускаем порции чуть реже для плавности
 }
 
         function apply(id, type) {
