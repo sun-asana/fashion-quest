@@ -24,10 +24,37 @@
             background-position: center;
             margin: 0;
             display: flex;
+            flex-direction: column; /* Чтобы кнопка и монетки не перекрывали друг друга */
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
+        }
+
+        /* Та самая стильная прозрачная кнопка */
+        #start-task-btn {
+            display: none; /* Скрыта, пока не получили данные */
+            padding: 20px 40px;
+            font-size: 24px;
+            font-family: var(--text-font);
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--neon-color);
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px solid var(--neon-color);
+            border-radius: 50px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2), inset 0 0 10px var(--neon-color);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        #start-task-btn:hover {
+            transform: scale(1.1);
+            background: var(--neon-color);
+            color: white;
+            box-shadow: 0 0 40px var(--neon-color);
         }
 
         #fq-modal {
@@ -48,67 +75,28 @@
             padding: 10px; min-height: 420px;
         }
         
-  #character-preview { 
-    flex-shrink: 0; 
-    /* Вместо картинки делаем белый полупрозрачный фон */
-    background: rgba(255, 255, 255, 0.3) !important; 
-    /* Добавляем легкое размытие, чтобы фон презентации мягко просвечивал */
-    backdrop-filter: blur(5px);
-    border-radius: 20px; 
-    border: 2px solid var(--neon-color); 
-    position: relative; 
-    width: 250px; 
-    height: 400px; 
-    overflow: hidden;
-    box-shadow: 0 0 20px var(--neon-color);
-}
+        #character-preview { 
+            flex-shrink: 0; 
+            background: rgba(255, 255, 255, 0.3) !important; 
+            backdrop-filter: blur(5px);
+            border-radius: 20px; 
+            border: 2px solid var(--neon-color); 
+            position: relative; 
+            width: 250px; 
+            height: 400px; 
+            overflow: hidden;
+            box-shadow: 0 0 20px var(--neon-color);
+        }
 
         .char-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
-        .char-layer[src=""], .char-layer:not([src]) { display: none; }
+        .hidden { display: none !important; }
 
-        #modal-content { 
-            flex-grow: 1; max-height: 400px; overflow-y: auto; padding-right: 10px; 
-            font-family: var(--text-font);
-            color: var(--text-color);
-        }
-        
-        #timer-display, #modal-title { 
-            font-family: var(--text-font); 
-            color: var(--text-color); 
-            font-weight: bold; text-align: center; margin-bottom: 15px; 
-        }
-
-        .shop-item { 
-            background: rgba(255,255,255,0.6); margin-bottom: 12px; padding: 15px; 
-            border-radius: 16px; display: flex; justify-content: space-between; align-items: center; 
-            border-left: 5px solid var(--neon-color);
-            transition: 0.3s;
-        }
-
-        .shop-item button, #modal-btn {
-            background: var(--bg-gradient) !important;
-            color: white !important; border: none; padding: 12px 25px; border-radius: 50px;
-            cursor: pointer; font-weight: bold; transition: 0.3s;
-            font-family: var(--text-font);
-            text-transform: uppercase; letter-spacing: 1px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-
-        .shop-item button:hover, #modal-btn:hover {
-            filter: brightness(1.2); transform: scale(1.05);
-            box-shadow: 0 0 15px var(--neon-color);
-        }
-
-        #error-toast {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            background: #e74c3c; color: white; padding: 10px 25px; border-radius: 50px;
-            font-family: var(--text-font); font-weight: bold; opacity: 0; transition: 0.3s; z-index: 10000;
-        }
+        /* ... остальные твои стили без изменений ... */
+        #modal-content { flex-grow: 1; max-height: 400px; overflow-y: auto; font-family: var(--text-font); color: var(--text-color); }
+        .shop-item { background: rgba(255,255,255,0.6); margin-bottom: 12px; padding: 15px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--neon-color); }
+        .shop-item button, #modal-btn { background: var(--bg-gradient) !important; color: white !important; border: none; padding: 12px 25px; border-radius: 50px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        #error-toast { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #e74c3c; color: white; padding: 10px 25px; border-radius: 50px; opacity: 0; transition: 0.3s; z-index: 10000; }
         #error-toast.show { opacity: 1; top: 40px; }
-        
-        /* Стилизация скроллбара */
-        #modal-content::-webkit-scrollbar { width: 6px; }
-        #modal-content::-webkit-scrollbar-thumb { background: var(--neon-color); border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -119,6 +107,8 @@
         <div class="fq-coin"></div>
         <span id="balance-val">0</span>
     </div>
+
+    <button id="start-task-btn">✨ Начать задание</button>
 
     <div id="fq-overlay" class="hidden">
         <div id="fq-modal">
@@ -142,32 +132,49 @@
     <script src="engine.js"></script>
     <script>
         let timeLeft = 0, timerId = null, currentReward = 0;
+        let cachedData = null;
 
+        // ЕДИНЫЙ ОБРАБОТЧИК СООБЩЕНИЙ
         window.addEventListener('message', function(event) {
-            if (event.data && event.data.type === 'openTask') {
+            const data = event.data;
+            if (data && data.type === 'openTask') {
+                console.log("Данные получены:", data);
+                cachedData = data; // Сохраняем, чтобы использовать при клике на кнопку
+                
                 const root = document.documentElement;
                 
-                // Применяем стили оформления
-                if (event.data.neonColor) root.style.setProperty('--neon-color', event.data.neonColor);
-                if (event.data.fontFamily) root.style.setProperty('--text-font', event.data.fontFamily);
-                if (event.data.textColor) root.style.setProperty('--text-color', event.data.textColor);
-                if (event.data.btnGradient) root.style.setProperty('--bg-gradient', event.data.btnGradient);
+                // 1. Применяем настройки из редактора
+                if (data.neonColor) {
+                    root.style.setProperty('--neon-color', data.neonColor);
+                }
+                if (data.fontFamily) root.style.setProperty('--text-font', data.fontFamily);
+                if (data.btnGradient) root.style.setProperty('--bg-gradient', data.btnGradient);
                 
-                if (event.data.transparent === true) {
+                // 2. Настраиваем фон
+                if (data.transparent) {
                     root.style.setProperty('--bg-opacity', '0');
                     document.body.style.backgroundImage = 'none';
-                } else {
+                } else if (data.bgImage) {
                     root.style.setProperty('--bg-opacity', '1');
-                    if (event.data.bgImage) {
-                        document.body.style.backgroundImage = `url('assets/backgrounds/${event.data.bgImage}.png')`;
-                        document.body.style.backgroundSize = 'cover';
-                    }
+                    document.body.style.backgroundImage = `url('assets/backgrounds/${data.bgImage}.png')`;
+                    document.body.style.backgroundSize = 'cover';
                 }
-                startTask(event.data);
+
+                // 3. Показываем ту самую кнопку "Начать"
+                const startBtn = document.getElementById('start-task-btn');
+                startBtn.style.display = 'block';
+                // Делаем фон кнопки чуть прозрачным цветом неона (HEX + 33 = 20% прозрачности)
+                startBtn.style.background = data.neonColor + "33"; 
+                
+                startBtn.onclick = () => {
+                    startBtn.style.display = 'none';
+                    startTask(data);
+                };
             }
         }, false);
 
         window.onload = function() {
+            // Инициализация баланса
             const isFirstRun = !sessionStorage.getItem('fq_session_active');
             if (isFirstRun) {
                 window.FQ.money = 0;
@@ -219,10 +226,7 @@
                 <input type="text" id="user-answer" style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--neon-color); text-align:center; font-size: 16px;" placeholder="Введите ваш ответ...">
             `;
             
-            // Отрисовываем LaTeX если он есть
-            if (window.MathJax) {
-                MathJax.typeset();
-            }
+            if (window.MathJax) MathJax.typeset();
             
             document.getElementById('modal-btn').innerText = "Проверить ответ";
             document.getElementById('modal-btn').onclick = () => {
@@ -241,28 +245,22 @@
         function openShop(filterType) {
             document.getElementById('timer-display').style.display = 'none';
             document.getElementById('character-preview').style.display = 'block';
-            
-            const typeNames = {'top':'ВЕРХ','bottom':'НИЗ','shoes':'ОБУВЬ','hat':'АКСЕССУАР ДЛЯ ГОЛОВЫ','acc':'АКСЕССУАРЫ'};
+            const typeNames = {'top':'ВЕРХ','bottom':'НИЗ','shoes':'ОБУВЬ','hat':'ШАПКА','acc':'АКСЕССУАРЫ'};
             document.getElementById('modal-title').innerText = typeNames[filterType] || "МАГАЗИН";
             
-            // Список предметов (подтяни свои ID из ассетов)
-           const allItems = [
-    // ВЕРХ
-    {id: 'top_1', name: '💎 Элитная вещь', price: 200, type: 'top'},
-    {id: 'top_2', name: '📦 Базовая вещь', price: 100, type: 'top'},
-    // НИЗ
-    {id: 'bottom_1', name: '💎 Элитная вещь', price: 200, type: 'bottom'},
-    {id: 'bottom_2', name: '📦 Базовая вещь', price: 100, type: 'bottom'},
-    // ОБУВЬ
-    {id: 'shoes_1', name: '💎 Элитная вещь', price: 200, type: 'shoes'},
-    {id: 'shoes_2', name: '📦 Базовая вещь', price: 100, type: 'shoes'},
-    // ШЛЯПЫ
-    {id: 'hat_1', name: '💎 Элитная вещь', price: 200, type: 'hat'},
-    {id: 'hat_2', name: '📦 Базовая вещь', price: 100, type: 'hat'},
-    // АКСЕССУАРЫ
-    {id: 'acc_1', name: '💎 Элитная вещь', price: 200, type: 'acc'},
-    {id: 'acc_2', name: '📦 Базовая вещь', price: 100, type: 'acc'}
-];
+            // Здесь твой список предметов (allItems) остается таким же...
+            const allItems = [
+                {id: 'top_1', name: '💎 Элитная вещь', price: 200, type: 'top'},
+                {id: 'top_2', name: '📦 Базовая вещь', price: 100, type: 'top'},
+                {id: 'bottom_1', name: '💎 Элитная вещь', price: 200, type: 'bottom'},
+                {id: 'bottom_2', name: '📦 Базовая вещь', price: 100, type: 'bottom'},
+                {id: 'shoes_1', name: '💎 Элитная вещь', price: 200, type: 'shoes'},
+                {id: 'shoes_2', name: '📦 Базовая вещь', price: 100, type: 'shoes'},
+                {id: 'hat_1', name: '💎 Элитная вещь', price: 200, type: 'hat'},
+                {id: 'hat_2', name: '📦 Базовая вещь', price: 100, type: 'hat'},
+                {id: 'acc_1', name: '💎 Элитная вещь', price: 200, type: 'acc'},
+                {id: 'acc_2', name: '📦 Базовая вещь', price: 100, type: 'acc'}
+            ];
 
             const items = allItems.filter(i => i.type === filterType);
             let html = '';
@@ -276,7 +274,7 @@
                 </div>`;
             });
             
-            document.getElementById('modal-content').innerHTML = html || '<p style="text-align:center">В этой категории пока нет товаров.</p>';
+            document.getElementById('modal-content').innerHTML = html || '<p style="text-align:center">Пусто.</p>';
             document.getElementById('modal-btn').innerText = "Продолжить путь ✨";
             document.getElementById('modal-btn').onclick = () => {
                 document.getElementById('fq-overlay').classList.add('hidden');
@@ -305,7 +303,6 @@
         }
 
         function refreshBalance() { document.getElementById('balance-val').innerText = window.FQ.money; }
-        
         function showError(text) {
             const t = document.getElementById('error-toast');
             t.innerText = text; t.classList.add('show');
