@@ -17,20 +17,20 @@
             --bg-opacity: 1; 
         }
 
-        body {
-            transition: background 0.5s ease;
-            background-color: rgba(255, 255, 255, var(--bg-opacity));
-            background-attachment: fixed;
-            background-position: center;
-            margin: 0;
-            display: flex;
-            flex-direction: column; /* Чтобы кнопка и монетки не перекрывали друг друга */
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    /* Убираем любые намеки на белый фон для Genially */
+    background-color: transparent !important; 
+    background: transparent !important;
+    /* Анимация смены фона (когда фон всё же задан в редакторе) */
+    transition: background 0.5s ease;
+}
         /* Та самая стильная прозрачная кнопка */
         #start-task-btn {
             display: none; /* Скрыта, пока не получили данные */
