@@ -164,7 +164,6 @@ function updatePreview() {
 }
 
 function generateCode() {
-    const neon = document.getElementById('neonColor').value;
     const data = {
         type: 'openTask',
         q: document.getElementById('q').value,
@@ -173,26 +172,19 @@ function generateCode() {
         time: 30,
         shopType: document.getElementById('shopType').value,
         fontFamily: document.getElementById('fontFamily').value,
-        neonColor: neon,
+        neonColor: document.getElementById('neonColor').value,
         btnGradient: document.getElementById('btnGradient').value,
         bgImage: document.getElementById('bgImage').value,
         transparent: document.getElementById('bgImage').value === ""
     };
 
-    // НОВЫЙ СКРИПТ: он не только шлет данные, но и делает фон прозрачным
-    const code = `<script>
-(function(){
-    // Делаем фон прозрачным в Genially
-    const style = document.createElement('style');
-    style.innerHTML = 'html, body { background: transparent !important; }';
-    document.head.appendChild(style);
-    
-    const s = () => window.parent.postMessage(${JSON.stringify(data)}, '*');
-    s();
-    setTimeout(s, 500);
-    setTimeout(s, 1500);
-})();
-<\/script>`;
+    // Создаем строку с данными для передачи через URL (Base64)
+    const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+
+    // ВАЖНО: Замени 'ТВОЙ_НИК' на свой логин GitHub в ссылке ниже!
+    const gameUrl = `https://sun-asana.github.io/fashion-quest/index.html?data=${encodedData}`;
+
+    const code = `<iframe src="${gameUrl}" style="width:100%; height:500px; border:none; background:transparent;" allowtransparency="true"></iframe>`;
 
     navigator.clipboard.writeText(code).then(() => {
         const toast = document.getElementById('toast');
@@ -200,7 +192,6 @@ function generateCode() {
         setTimeout(() => toast.classList.remove('show'), 3000);
     });
 }
-
     const dz = document.getElementById('drop-zone');
     dz.ondragover = () => { dz.classList.add('hover'); return false; };
     dz.ondragleave = () => { dz.classList.remove('hover'); return false; };
