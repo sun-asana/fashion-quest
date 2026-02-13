@@ -2,72 +2,99 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Fashion Quest - Pro Editor with Preview</title>
+    <title>Fashion Quest Pro Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Ubuntu:wght@400;700&family=Oswald:wght@500&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
     <style>
-        :root { --p-neon: #00f2ff; --p-grad: linear-gradient(45deg, #00f2ff, #0066ff); }
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        :root { --p-neon: #00f2ff; }
+        body { font-family: 'Montserrat', sans-serif; background: #0f172a; color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* ЛЕВАЯ ПАНЕЛЬ (НАСТРОЙКИ) */
-        .settings-panel { width: 400px; padding: 20px; background: #1e293b; overflow-y: auto; border-right: 2px solid #334155; box-shadow: 10px 0 30px rgba(0,0,0,0.3); z-index: 10; }
-        h2 { color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; font-size: 18px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
-        h3 { font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 20px; }
+        /* ЛЕВАЯ ПАНЕЛЬ */
+        .settings-panel { width: 380px; padding: 25px; background: #1e293b; overflow-y: auto; border-right: 1px solid #334155; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+        .header-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h2 { color: #38bdf8; font-size: 16px; text-transform: uppercase; margin: 0; }
         
-        .group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 4px; font-size: 12px; color: #cbd5e1; }
-        input, select, textarea { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 13px; }
-        .row { display: flex; gap: 10px; }
+        .group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 13px; box-sizing: border-box; }
         
-        /* ПРАВАЯ ПАНЕЛЬ (ПРЕДПРОСМОТР) */
-        .preview-panel { flex-grow: 1; position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
-        #preview-bg { position: absolute; width: 100%; height: 100%; background-size: cover; background-position: center; transition: 0.5s; }
-        
-        /* КНОПКА ЗАПУСКА (КАК В GENIALLY) */
-        #start-trigger { position: absolute; top: 20px; left: 20px; padding: 10px 20px; background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #38bdf8; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        /* DRAG & DROP */
+        #drop-zone { border: 2px dashed #334155; padding: 20px; text-align: center; border-radius: 10px; cursor: pointer; transition: 0.3s; margin-bottom: 15px; font-size: 12px; color: #64748b; }
+        #drop-zone.hover { border-color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
 
-        /* ОКНО ИГРЫ В ПРЕВЬЮ */
+        /* ПРАВАЯ ПАНЕЛЬ */
+        .preview-panel { flex-grow: 1; position: relative; background: #020617; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #preview-bg { position: absolute; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0.4; pointer-events: none; }
+        
+        /* ГЕНЕРИРУЕМАЯ КНОПКА (визуализация) */
+        #genially-btn-mock { padding: 12px 24px; background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #38bdf8; border-radius: 50px; cursor: pointer; margin-bottom: 40px; font-weight: bold; z-index: 5; }
+
+        /* ОКНО ПРЕДПРОСМОТРА */
         #mock-modal { 
-            width: 80%; max-width: 600px; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
-            border-radius: 20px; padding: 20px; border: 2px solid var(--p-neon);
-            box-shadow: 0 0 20px var(--p-neon); color: #333; position: relative;
+            width: 90%; max-width: 500px; background: rgba(255,255,255,0.9); backdrop-filter: blur(15px);
+            border-radius: 24px; padding: 30px; border: 3px solid var(--p-neon);
+            box-shadow: 0 0 30px var(--p-neon); color: #1e293b; z-index: 5; transition: 0.3s;
         }
-        .mock-btn { 
-            background: var(--p-grad); color: white; border: none; padding: 10px 20px; 
-            border-radius: 50px; font-weight: bold; width: 100%; margin-top: 15px;
-        }
+        .mock-btn { width: 100%; padding: 12px; border: none; border-radius: 12px; color: white; font-weight: 700; margin-top: 20px; cursor: pointer; }
 
-        #copy-btn { width: 100%; padding: 15px; background: #38bdf8; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        #copy-btn { width: 100%; padding: 16px; background: #38bdf8; color: #0f172a; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        #copy-btn:hover { background: #7dd3fc; transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
 <div class="settings-panel">
-    <h2>Fashion Quest Editor ✨</h2>
-    
-    <button id="start-trigger" onclick="alert('Это кнопка для Genially! Скопируйте код снизу и вставьте его туда.')">✨ Начать задание</button>
-
-    <h3>📝 Контент</h3>
-    <div class="group"><label>Вопрос</label><textarea id="q" oninput="updatePreview()">1+5</textarea></div>
-    <div class="group"><label>Ответ</label><input type="text" id="a" value="6"></div>
-
-    <h3>🎨 Дизайн</h3>
-    <div class="row">
-        <div class="group"><label>Неон</label><input type="color" id="neonColor" value="#00f2ff" oninput="updatePreview()"></div>
-        <div class="group"><label>Текст</label><input type="color" id="textColor" value="#333333" oninput="updatePreview()"></div>
+    <div class="header-area">
+        <h2>Editor v2.0</h2>
     </div>
-    
+
+    <div class="group">
+        <label>Вопрос (поддерживает LaTeX, напр. \( \frac{1}{2} \))</label>
+        <textarea id="q" rows="3" oninput="updatePreview()">Решите уравнение: x + 5 = 11</textarea>
+    </div>
+
+    <div id="drop-zone" onclick="document.getElementById('file-input').click()">
+        Перетащите картинку задания или нажмите для выбора
+        <input type="file" id="file-input" style="display:none" onchange="handleFile(this.files)">
+    </div>
+
+    <div class="group">
+        <label>Правильный ответ</label>
+        <input type="text" id="a" value="6">
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="group">
+            <label>Шрифт</label>
+            <select id="fontFamily" onchange="updatePreview()">
+                <option value="'Montserrat', sans-serif">Montserrat</option>
+                <option value="'Playfair Display', serif">Playfair (Элегантный)</option>
+                <option value="'Ubuntu', sans-serif">Ubuntu</option>
+                <option value="'Oswald', sans-serif">Oswald (Строгий)</option>
+            </select>
+        </div>
+        <div class="group">
+            <label>Цвет неона</label>
+            <input type="color" id="neonColor" value="#00f2ff" oninput="updatePreview()">
+        </div>
+    </div>
+
     <div class="group">
         <label>Градиент кнопок</label>
-        <select id="gradient" onchange="updatePreview()">
-            <option value="linear-gradient(45deg, #00f2ff, #0066ff)">Синий неон</option>
-            <option value="linear-gradient(45deg, #ff00ff, #7000ff)">Розовый неон</option>
-            <option value="linear-gradient(45deg, #ccff00, #009432)">Кислотный лайм</option>
+        <select id="btnGradient" onchange="updatePreview()">
+            <option value="linear-gradient(45deg, #00f2ff, #0066ff)">Голубой неон</option>
+            <option value="linear-gradient(45deg, #ff00ff, #7000ff)">Розовая фуксия</option>
+            <option value="linear-gradient(45deg, #facc15, #ea580c)">Огненный</option>
+            <option value="linear-gradient(45deg, #4ade80, #166534)">Зеленый лес</option>
         </select>
     </div>
 
     <div class="group">
-        <label>Фон</label>
+        <label>Фон (из GitHub)</label>
         <select id="bgImage" onchange="updatePreview()">
-            <option value="">Прозрачный (Genially)</option>
+            <option value="">Без фона (прозрачный)</option>
             <option value="bg_space">Звездная пыль</option>
             <option value="bg_cyber">Киберпанк</option>
             <option value="bg_watercolor">Акварель</option>
@@ -75,49 +102,72 @@
     </div>
 
     <div class="group">
-        <label>Категория</label>
-        <select id="shopType"><option value="top">Верх</option><option value="bottom">Низ</option></select>
+        <label>Категория в магазине</label>
+        <select id="shopType">
+            <option value="top">Верхняя одежда</option>
+            <option value="bottom">Низ (брюки/юбки)</option>
+            <option value="shoes">Обувь</option>
+            <option value="hat">Головные уборы</option>
+            <option value="acc">Аксессуары</option>
+        </select>
     </div>
 
-    <button id="copy-btn" onclick="generateCode()">СКОПИРОВАТЬ КОД</button>
+    <button id="copy-btn" onclick="generateCode()">СКОПИРОВАТЬ КОД ДЛЯ GENIALLY</button>
 </div>
 
 <div class="preview-panel">
     <div id="preview-bg"></div>
+    
+    <div id="genially-btn-mock">✨ Начать задание</div>
+
     <div id="mock-modal">
-        <div style="text-align: center; font-size: 10px; color: #666; margin-bottom: 10px;">ПРЕДПРОСМОТР</div>
-        <div id="p-question" style="text-align: center; font-size: 18px; font-weight: bold;">1+5</div>
-        <input type="text" placeholder="Ответ..." style="width: 100%; margin-top: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 8px; text-align: center;">
-        <button class="mock-btn">Проверить ответ</button>
+        <div id="p-question" style="text-align: center; font-size: 20px; font-weight: 500; margin-bottom: 20px;">Решите уравнение: x + 5 = 11</div>
+        <div id="p-img-area" style="display:none; margin-bottom: 15px; text-align: center;">
+            <img id="p-img" style="max-width: 100%; border-radius: 10px; max-height: 150px;">
+        </div>
+        <input type="text" placeholder="Ваш ответ..." style="text-align: center; border: 1px solid #cbd5e1; background: white; color: #1e293b;">
+        <button class="mock-btn">Проверить</button>
     </div>
 </div>
 
 <script>
+    let uploadedImgBase64 = "";
+
+    function handleFile(files) {
+        const file = files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            uploadedImgBase64 = e.target.result;
+            document.getElementById('p-img').src = uploadedImgBase64;
+            document.getElementById('p-img-area').style.display = "block";
+            document.getElementById('drop-zone').innerText = "Картинка загружена!";
+        };
+        reader.readAsDataURL(file);
+    }
+
     function updatePreview() {
         const neon = document.getElementById('neonColor').value;
-        const grad = document.getElementById('gradient').value;
-        const text = document.getElementById('textColor').value;
+        const grad = document.getElementById('btnGradient').value;
+        const font = document.getElementById('fontFamily').value;
         const bg = document.getElementById('bgImage').value;
         const qText = document.getElementById('q').value;
 
-        // Применяем к превью
         const modal = document.getElementById('mock-modal');
         modal.style.borderColor = neon;
-        modal.style.boxShadow = `0 0 20px ${neon}`;
-        modal.style.color = text;
+        modal.style.boxShadow = `0 0 30px ${neon}`;
+        modal.style.fontFamily = font;
         
         document.getElementById('p-question').innerText = qText;
-        
-        const btn = document.querySelector('.mock-btn');
-        btn.style.background = grad;
+        if (window.MathJax) { MathJax.typeset(); } // Обновляем LaTeX
 
+        document.querySelector('.mock-btn').style.background = grad;
+        
         const bgPanel = document.getElementById('preview-bg');
         if(bg) {
             bgPanel.style.backgroundImage = `url('assets/backgrounds/${bg}.png')`;
-            bgPanel.style.opacity = "1";
+            bgPanel.style.opacity = "0.6";
         } else {
             bgPanel.style.backgroundImage = "none";
-            bgPanel.style.backgroundColor = "#222";
         }
     }
 
@@ -126,19 +176,30 @@
             type: 'openTask',
             q: document.getElementById('q').value,
             a: document.getElementById('a').value,
+            img: uploadedImgBase64,
             time: 30,
             shopType: document.getElementById('shopType').value,
+            fontFamily: document.getElementById('fontFamily').value,
             neonColor: document.getElementById('neonColor').value,
-            textColor: document.getElementById('textColor').value,
-            btnGradient: document.getElementById('gradient').value,
+            btnGradient: document.getElementById('btnGradient').value,
             bgImage: document.getElementById('bgImage').value,
             transparent: document.getElementById('bgImage').value === ""
         };
         const code = `window.parent.postMessage(${JSON.stringify(data)}, '*');`;
         navigator.clipboard.writeText(code);
-        alert("Код скопирован!");
+        alert("Код скопирован! Теперь вставьте его в Interactivity -> Insert HTML в Genially.");
     }
     
+    // Инициализация Drag and Drop
+    const dz = document.getElementById('drop-zone');
+    dz.ondragover = () => { dz.classList.add('hover'); return false; };
+    dz.ondragleave = () => { dz.classList.remove('hover'); return false; };
+    dz.ondrop = (e) => {
+        dz.classList.remove('hover');
+        e.preventDefault();
+        handleFile(e.dataTransfer.files);
+    };
+
     updatePreview();
 </script>
 </body>
