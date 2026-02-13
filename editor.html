@@ -2,66 +2,110 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Fashion Quest Editor</title>
+    <title>Fashion Quest - Ultimate Editor</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; padding: 20px; }
-        .panel { background: #1e293b; padding: 25px; border-radius: 15px; max-width: 600px; margin: 0 auto; border: 1px solid #334155; }
-        h1 { text-align: center; color: #38bdf8; text-transform: uppercase; letter-spacing: 2px; }
-        .group { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #334155; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #94a3b8; }
-        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
-        .row { display: flex; gap: 10px; }
-        .color-preview { height: 40px; width: 60px; border-radius: 5px; cursor: pointer; }
-        button { width: 100%; padding: 15px; background: #38bdf8; border: none; border-radius: 10px; color: #0f172a; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        button:hover { background: #7dd3fc; }
-        #copy-area { margin-top: 20px; background: #000; padding: 15px; border-radius: 10px; font-size: 12px; display: none; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; padding: 20px; line-height: 1.4; }
+        .panel { background: #1e293b; padding: 25px; border-radius: 15px; max-width: 700px; margin: 0 auto; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { text-align: center; color: #38bdf8; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; }
+        h3 { color: #94a3b8; border-bottom: 1px solid #334155; padding-bottom: 5px; margin-top: 20px; font-size: 14px; text-transform: uppercase; }
+        
+        .group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 13px; color: #cbd5e1; }
+        input, select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+        
+        .row { display: flex; gap: 15px; margin-bottom: 10px; }
+        .row > div { flex: 1; }
+        
+        .hint { font-size: 11px; color: #64748b; margin-top: 4px; }
+        
+        button { width: 100%; padding: 18px; background: linear-gradient(45deg, #38bdf8, #818cf8); border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 16px; transition: 0.3s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4); }
+        
+        #copy-area { margin-top: 20px; background: #000; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 12px; word-break: break-all; display: none; border: 1px solid #38bdf8; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h1>Fashion Editor ✨</h1>
+        <h1>Fashion Quest Editor ✨</h1>
         
+        <h3>📝 Контент задания</h3>
         <div class="group">
-            <label>Текст задания и ответ</label>
-            <input type="text" id="q" placeholder="Вопрос для ученицы..." style="margin-bottom: 5px;">
-            <input type="text" id="a" placeholder="Правильный ответ...">
+            <label>Вопрос (поддерживает LaTeX, например: \( \sqrt{x^2+y^2} \))</label>
+            <textarea id="q" rows="2" placeholder="Введите текст вопроса..."></textarea>
         </div>
-
-        <div class="group">
-            <label>Дизайн текста и шрифты</label>
-            <div class="row">
-                <select id="font">
-                    <option value="Arial">Arial</option>
-                    <option value="'Montserrat', sans-serif">Montserrat</option>
-                    <option value="'Courier New', monospace">Retro (Courier)</option>
-                    <option value="'Playfair Display', serif">Luxury (Playfair)</option>
-                </select>
-                <input type="color" id="textColor" value="#333333" title="Цвет текста">
+        <div class="row">
+            <div class="group">
+                <label>Ссылка на картинку (URL)</label>
+                <input type="text" id="img" placeholder="https://...">
+            </div>
+            <div class="group">
+                <label>Правильный ответ</label>
+                <input type="text" id="a" placeholder="Ответ...">
             </div>
         </div>
 
-        <div class="group">
-            <label>Неон и градиент кнопок</label>
-            <div class="row">
-                <input type="color" id="neonColor" value="#00f2ff" title="Цвет неонового контура">
+        <h3>⚙️ Механика</h3>
+        <div class="row">
+            <div class="group">
+                <label>Время (сек)</label>
+                <input type="number" id="time" value="30">
+            </div>
+            <div class="group">
+                <label>Категория в магазине</label>
+                <select id="shopType">
+                    <option value="top">Верх (Одежда)</option>
+                    <option value="bottom">Низ (Юбки/Брюки)</option>
+                    <option value="shoes">Обувь</option>
+                    <option value="hat">Головные уборы</option>
+                    <option value="acc">Аксессуары</option>
+                </select>
+            </div>
+        </div>
+
+        <h3>🎨 Дизайн и Неон</h3>
+        <div class="row">
+            <div class="group">
+                <label>Шрифт текста</label>
+                <select id="font">
+                    <option value="Arial, sans-serif">Стандартный</option>
+                    <option value="'Montserrat', sans-serif">Montserrat (Модный)</option>
+                    <option value="'Courier New', monospace">Retro</option>
+                    <option value="'Playfair Display', serif">Luxury</option>
+                </select>
+            </div>
+            <div class="group">
+                <label>Цвет текста</label>
+                <input type="color" id="textColor" value="#333333">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="group">
+                <label>Цвет неонового сияния</label>
+                <input type="color" id="neonColor" value="#00f2ff">
+            </div>
+            <div class="group">
+                <label>Градиент кнопок</label>
                 <select id="gradient">
-                    <option value="linear-gradient(45deg, #00f2ff, #0066ff)">Ледяной синий</option>
-                    <option value="linear-gradient(45deg, #ff00ff, #7000ff)">Cyber Розовый</option>
+                    <option value="linear-gradient(45deg, #00f2ff, #0066ff)">Синий лед</option>
+                    <option value="linear-gradient(45deg, #ff00ff, #7000ff)">Розовый неон</option>
                     <option value="linear-gradient(45deg, #ccff00, #009432)">Кислотный лайм</option>
                 </select>
             </div>
         </div>
 
         <div class="group">
-            <label>Задний фон (из GitHub)</label>
+            <label>Фон игры (из GitHub assets/backgrounds/)</label>
             <select id="bgImage">
-                <option value="">Без фона (белый)</option>
+                <option value="">Без фона</option>
                 <option value="bg_neon">Neon City</option>
                 <option value="bg_fashion">Fashion Studio</option>
-                <option value="bg_abstract">Abstract Art</option>
             </select>
-            <label style="margin-top: 10px;">
-                <input type="checkbox" id="transparent" style="width: auto;"> Сделать полностью прозрачным для Genially
+            <label style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="transparent" style="width: auto;"> 
+                <span>Прозрачный фон (использовать фон из Genially)</span>
             </label>
         </div>
 
@@ -73,10 +117,11 @@
         function generateCode() {
             const data = {
                 type: 'openTask',
-                q: document.getElementById('q').value || 'Твой вопрос?',
-                a: document.getElementById('a').value || 'ответ',
-                time: 30,
-                shopType: 'top',
+                q: document.getElementById('q').value || 'Вопрос?',
+                a: document.getElementById('a').value || '',
+                img: document.getElementById('img').value,
+                time: parseInt(document.getElementById('time').value),
+                shopType: document.getElementById('shopType').value,
                 fontFamily: document.getElementById('font').value,
                 textColor: document.getElementById('textColor').value,
                 neonColor: document.getElementById('neonColor').value,
@@ -87,12 +132,12 @@
 
             const code = `window.parent.postMessage(${JSON.stringify(data)}, '*');`;
             
-            // Копирование в буфер
-            navigator.clipboard.writeText(code);
-            const area = document.getElementById('copy-area');
-            area.style.display = 'block';
-            area.innerText = "Код скопирован! Вставь его в Genially:\n\n" + code;
-            alert("Код готов и скопирован в буфер обмена!");
+            navigator.clipboard.writeText(code).then(() => {
+                const area = document.getElementById('copy-area');
+                area.style.display = 'block';
+                area.innerText = "Код скопирован! Вставь его в Genially:\n\n" + code;
+                alert("Готово! Код в буфере обмена.");
+            });
         }
     </script>
 </body>
