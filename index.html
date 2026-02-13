@@ -298,19 +298,20 @@
 
         // ФУНКЦИЯ КОНФЕТТИ
         function launchFashionConfetti() {
-            var duration = 5 * 1000;
-            var animationEnd = Date.now() + duration;
-            var interval = setInterval(function() {
-                var timeLeft = animationEnd - Date.now();
-                if (timeLeft <= 0) return clearInterval(interval);
-                confetti({
-                    particleCount: 40,
-                    spread: 90,
-                    origin: { y: 0.6 },
-                    colors: ['#00f2ff', '#ff00ff', '#ffffff']
-                });
-            }, 250);
-        }
+    var duration = 5 * 1000;
+    var animationEnd = Date.now() + duration;
+    var interval = setInterval(function() {
+        var timeLeft = animationEnd - Date.now();
+        if (timeLeft <= 0) return clearInterval(interval);
+        confetti({
+            particleCount: 40,
+            spread: 90,
+            origin: { y: 0.6 },
+            colors: ['#00f2ff', '#ff00ff', '#ffffff'],
+            zIndex: 9999 // ТЕПЕРЬ ОНИ БУДУТ ПОВЕРХ ОКНА
+        });
+    }, 250);
+}
 
         function apply(id, type) {
             const cleanType = type || id.split('_')[0]; 
