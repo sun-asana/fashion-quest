@@ -1,224 +1,98 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Fashion Quest: PRO Designer Editor</title>
+    <title>Fashion Quest Editor</title>
     <style>
-        :root {
-            --neon-blue: #00d2ff;
-            --neon-purple: #9d50bb;
-            --bg-dark: #0f172a;
-            --card-bg: #1e293b;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-            color: #f1f5f9;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        .editor-card {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 28px;
-            box-shadow: 0 0 30px rgba(0, 210, 255, 0.15);
-            width: 100%;
-            max-width: 600px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        h2 {
-            text-align: center;
-            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 32px;
-            margin-bottom: 30px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            font-weight: 800;
-        }
-        
-        .section-title {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #94a3b8;
-            margin-top: 30px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 8px;
-            font-weight: bold;
-        }
-        
-        label { font-weight: 600; display: block; margin-top: 18px; font-size: 0.9rem; color: #cbd5e1; }
-        input, select { 
-            width: 100%; padding: 14px; margin-top: 8px; 
-            border: 1px solid #334155; border-radius: 14px; 
-            box-sizing: border-box; background: rgba(15, 23, 42, 0.6); 
-            color: white; transition: 0.3s; 
-        }
-        input:focus { border-color: var(--neon-blue); outline: none; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3); }
-
-        /* Поле загрузки изображения */
-        #drop-zone { 
-            border: 2px dashed #334155; padding: 30px; 
-            text-align: center; border-radius: 16px; 
-            margin-top: 15px; color: #94a3b8; cursor: pointer; 
-            transition: 0.3s; background: rgba(15, 23, 42, 0.4);
-        }
-        #drop-zone:hover, #drop-zone.hover { 
-            border-color: var(--neon-blue); color: var(--neon-blue); 
-            background: rgba(0, 210, 255, 0.05); 
-        }
-        #preview-img { max-width: 100%; max-height: 180px; margin-top: 15px; border-radius: 12px; display: none; box-shadow: 0 0 15px rgba(0,0,0,0.3); }
-
-        /* Выбор цвета */
-        .color-picker-wrapper { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
-        input[type="color"] { width: 80px; height: 45px; padding: 2px; cursor: pointer; border: none; background: none; }
-
-        /* Кнопка генерации */
-        #gen-btn { 
-            width: 100%; padding: 18px; 
-            background: linear-gradient(45deg, #00d2ff, #9d50bb); 
-            color: white; border: none; border-radius: 16px; 
-            cursor: pointer; font-size: 16px; font-weight: bold; 
-            margin-top: 35px; transition: 0.4s; text-transform: uppercase;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-        #gen-btn:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(0, 210, 255, 0.5); filter: brightness(1.1); }
-        
-        /* Блок результата */
-        .result-container { position: relative; margin-top: 30px; display: none; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .code-wrapper {
-            background: #020617; border-radius: 16px; 
-            border: 1px solid #1e293b; padding: 20px; 
-            margin-top: 10px; position: relative;
-        }
-        code { 
-            display: block; color: #38bdf8; 
-            font-family: 'Consolas', monospace; font-size: 11px; 
-            white-space: pre-wrap; max-height: 150px; 
-            overflow-y: auto; line-height: 1.5; 
-        }
-        
-        #copy-btn { 
-            position: absolute; top: 12px; right: 12px; 
-            background: rgba(56, 189, 248, 0.15); color: #38bdf8; 
-            border: 1px solid rgba(56, 189, 248, 0.3); 
-            padding: 6px 14px; border-radius: 8px; 
-            font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s; 
-        }
-        #copy-btn:hover { background: var(--neon-blue); color: white; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; padding: 20px; }
+        .panel { background: #1e293b; padding: 25px; border-radius: 15px; max-width: 600px; margin: 0 auto; border: 1px solid #334155; }
+        h1 { text-align: center; color: #38bdf8; text-transform: uppercase; letter-spacing: 2px; }
+        .group { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #334155; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #94a3b8; }
+        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+        .row { display: flex; gap: 10px; }
+        .color-preview { height: 40px; width: 60px; border-radius: 5px; cursor: pointer; }
+        button { width: 100%; padding: 15px; background: #38bdf8; border: none; border-radius: 10px; color: #0f172a; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #7dd3fc; }
+        #copy-area { margin-top: 20px; background: #000; padding: 15px; border-radius: 10px; font-size: 12px; display: none; }
     </style>
 </head>
 <body>
-    <div class="editor-card">
-        <h2>Fashion Quest</h2>
+    <div class="panel">
+        <h1>Fashion Editor ✨</h1>
         
-        <div class="section-title">Контент</div>
-        <label>Вопрос для ученика:</label>
-        <input type="text" id="q" placeholder="Например: Реши задачу на картинке">
-        
-        <div id="drop-zone">Перетащите картинку задания (PNG/JPG)</div>
-        <input type="file" id="file-input" style="display:none" accept="image/*">
-        <center><img id="preview-img"></center>
+        <div class="group">
+            <label>Текст задания и ответ</label>
+            <input type="text" id="q" placeholder="Вопрос для ученицы..." style="margin-bottom: 5px;">
+            <input type="text" id="a" placeholder="Правильный ответ...">
+        </div>
 
-        <label>Правильный ответ:</label>
-        <input type="text" id="a" placeholder="Ответ">
-
-        <div class="section-title">Механика и Дизайн</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div>
-                <label>Время (сек):</label>
-                <input type="number" id="timer" value="30">
-            </div>
-            <div>
-                <label>Цвет кнопок:</label>
-                <div class="color-picker-wrapper">
-                    <input type="color" id="ui-color" value="#00d2ff">
-                </div>
+        <div class="group">
+            <label>Дизайн текста и шрифты</label>
+            <div class="row">
+                <select id="font">
+                    <option value="Arial">Arial</option>
+                    <option value="'Montserrat', sans-serif">Montserrat</option>
+                    <option value="'Courier New', monospace">Retro (Courier)</option>
+                    <option value="'Playfair Display', serif">Luxury (Playfair)</option>
+                </select>
+                <input type="color" id="textColor" value="#333333" title="Цвет текста">
             </div>
         </div>
 
-        <label>Категория в магазине:</label>
-        <select id="type">
-            <option value="top">Верх</option>
-            <option value="bottom">Низ</option>
-            <option value="shoes">Обувь</option>
-            <option value="hat">Головной убор</option>
-            <option value="acc">Аксессуары</option>
-        </select>
-
-        <button id="gen-btn" onclick="generate()">Сгенерировать код ✨</button>
-        
-        <div id="result" class="result-container">
-            <label>Код для вставки в Genially:</label>
-            <div class="code-wrapper">
-                <button id="copy-btn" onclick="copyCode()">КОПИРОВАТЬ</button>
-                <code id="out"></code>
+        <div class="group">
+            <label>Неон и градиент кнопок</label>
+            <div class="row">
+                <input type="color" id="neonColor" value="#00f2ff" title="Цвет неонового контура">
+                <select id="gradient">
+                    <option value="linear-gradient(45deg, #00f2ff, #0066ff)">Ледяной синий</option>
+                    <option value="linear-gradient(45deg, #ff00ff, #7000ff)">Cyber Розовый</option>
+                    <option value="linear-gradient(45deg, #ccff00, #009432)">Кислотный лайм</option>
+                </select>
             </div>
         </div>
+
+        <div class="group">
+            <label>Задний фон (из GitHub)</label>
+            <select id="bgImage">
+                <option value="">Без фона (белый)</option>
+                <option value="bg_neon">Neon City</option>
+                <option value="bg_fashion">Fashion Studio</option>
+                <option value="bg_abstract">Abstract Art</option>
+            </select>
+            <label style="margin-top: 10px;">
+                <input type="checkbox" id="transparent" style="width: auto;"> Сделать полностью прозрачным для Genially
+            </label>
+        </div>
+
+        <button onclick="generateCode()">СКОПИРОВАТЬ КОД ДЛЯ GENIALLY</button>
+        <div id="copy-area"></div>
     </div>
 
     <script>
-        let base64Image = "";
-        const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('file-input');
-        const preview = document.getElementById('preview-img');
-
-        dropZone.onclick = () => fileInput.click();
-        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('hover'); };
-        dropZone.ondragleave = () => dropZone.classList.remove('hover');
-        dropZone.ondrop = (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('hover');
-            handleFile(e.dataTransfer.files[0]);
-        };
-
-        fileInput.onchange = (e) => handleFile(e.target.files[0]);
-
-        function handleFile(file) {
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                base64Image = e.target.result;
-                preview.src = base64Image;
-                preview.style.display = "block";
-                dropZone.innerText = "Картинка готова ✅";
+        function generateCode() {
+            const data = {
+                type: 'openTask',
+                q: document.getElementById('q').value || 'Твой вопрос?',
+                a: document.getElementById('a').value || 'ответ',
+                time: 30,
+                shopType: 'top',
+                fontFamily: document.getElementById('font').value,
+                textColor: document.getElementById('textColor').value,
+                neonColor: document.getElementById('neonColor').value,
+                btnGradient: document.getElementById('gradient').value,
+                bgImage: document.getElementById('bgImage').value,
+                transparent: document.getElementById('transparent').checked
             };
-            reader.readAsDataURL(file);
-        }
 
-        function generate() {
-            const q = document.getElementById('q').value;
-            const a = document.getElementById('a').value;
-            const type = document.getElementById('type').value;
-            const time = document.getElementById('timer').value;
-            const color = document.getElementById('ui-color').value;
-            const url = "https://sun-asana.github.io/fashion-quest/index.html";
+            const code = `window.parent.postMessage(${JSON.stringify(data)}, '*');`;
             
-            // Код для Genially с поддержкой картинок и цвета
-            const code = `<div style="width:100%;height:100%"><iframe src="${url}" style="width:100%;height:100%;border:none;position:fixed;top:0;left:0;pointer-events:none;z-index:9999" id="fq-engine"></iframe><button style="background:${color};color:#fff;border:none;padding:15px 30px;border-radius:50px;font-family:sans-serif;font-weight:700;cursor:pointer;pointer-events:auto;box-shadow: 0 4px 15px rgba(0,0,0,0.2)" onclick="const e=document.getElementById('fq-engine');e.style.pointerEvents='auto';e.contentWindow.postMessage({type:'openTask',q:'${q.replace(/'/g, "\\'")}',a:'${a.replace(/'/g, "\\'")}',time:${time},img:'${base64Image}',shopType:'${type}',themeColor:'${color}'},'*')">✨ Начать задание ✨</button></div>`;
-            
-            document.getElementById('out').innerText = code;
-            document.getElementById('result').style.display = 'block';
-        }
-
-        function copyCode() {
-            const codeText = document.getElementById('out').innerText;
-            const btn = document.getElementById('copy-btn');
-            navigator.clipboard.writeText(codeText).then(() => {
-                btn.innerText = "ГОТОВО!";
-                setTimeout(() => btn.innerText = "КОПИРОВАТЬ", 2000);
-            });
+            // Копирование в буфер
+            navigator.clipboard.writeText(code);
+            const area = document.getElementById('copy-area');
+            area.style.display = 'block';
+            area.innerText = "Код скопирован! Вставь его в Genially:\n\n" + code;
+            alert("Код готов и скопирован в буфер обмена!");
         }
     </script>
 </body>
