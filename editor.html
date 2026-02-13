@@ -171,24 +171,36 @@
         }
     }
 
-    function generateCode() {
-        const data = {
-            type: 'openTask',
-            q: document.getElementById('q').value,
-            a: document.getElementById('a').value,
-            img: uploadedImgBase64,
-            time: 30,
-            shopType: document.getElementById('shopType').value,
-            fontFamily: document.getElementById('fontFamily').value,
-            neonColor: document.getElementById('neonColor').value,
-            btnGradient: document.getElementById('btnGradient').value,
-            bgImage: document.getElementById('bgImage').value,
-            transparent: document.getElementById('bgImage').value === ""
+function generateCode() {
+    const data = {
+        type: 'openTask',
+        q: document.getElementById('q').value,
+        a: document.getElementById('a').value,
+        img: uploadedImgBase64,
+        time: 30,
+        shopType: document.getElementById('shopType').value,
+        fontFamily: document.getElementById('fontFamily').value,
+        neonColor: document.getElementById('neonColor').value,
+        btnGradient: document.getElementById('btnGradient').value,
+        bgImage: document.getElementById('bgImage').value,
+        transparent: document.getElementById('bgImage').value === ""
+    };
+
+    // Оборачиваем в скрипт и добавляем проверку готовности
+    const code = `<script>
+    (function() {
+        const send = () => {
+            window.parent.postMessage(${JSON.stringify(data)}, '*');
         };
-        const code = `window.parent.postMessage(${JSON.stringify(data)}, '*');`;
-        navigator.clipboard.writeText(code);
-        alert("Код скопирован! Теперь вставьте его в Interactivity -> Insert HTML в Genially.");
-    }
+        // Отправляем сразу и через небольшую паузу для надежности
+        send();
+        setTimeout(send, 500);
+    })();
+    <\/script>`;
+
+    navigator.clipboard.writeText(code);
+    alert("Код для Genially скопирован! Вставляйте через Insert -> Others.");
+}
     
     // Инициализация Drag and Drop
     const dz = document.getElementById('drop-zone');
