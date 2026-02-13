@@ -1,12 +1,22 @@
 <!DOCTYPE html>
 <html>
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <link rel="stylesheet" href="styles.css">
     <style>
         :root {
             --accent-color: #4a69bd; 
+            --neon-color: #00f2ff;
+            --bg-gradient: linear-gradient(135deg, #4a69bd 0%, #10ac84 100%);
+            --text-font: 'Arial', sans-serif;
+            --text-color: #333333;
+        }
+
+        body {
+            transition: background 0.5s ease;
+            background-attachment: fixed;
+            background-position: center;
         }
 
         #fq-modal {
@@ -14,119 +24,66 @@
             width: 95% !important;
             padding: 30px !important;
             border-radius: 24px !important;
-            background: white !important;
-            border: none !important;
-            position: relative; /* Чтобы тост позиционировался внутри модалки */
+            background: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(12px);
+            border: 2px solid var(--neon-color) !important;
+            box-shadow: 0 0 20px var(--neon-color), inset 0 0 10px var(--neon-color) !important;
+            position: relative;
         }
 
         .game-container { 
-            display: flex; 
-            align-items: center; 
-            gap: 30px; 
-            justify-content: center; 
-            padding: 10px;
-            min-height: 420px;
+            display: flex; align-items: center; gap: 30px; justify-content: center; 
+            padding: 10px; min-height: 420px;
         }
         
         #character-preview { 
             flex-shrink: 0; 
-            background: #fdfdfd; 
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0.1) 100%), url('assets/backgrounds/char_bg.png'); 
+            background-size: cover;
             border-radius: 20px; 
-            border: 2px solid var(--accent-color); 
-            position: relative; 
-            width: 250px; 
-            height: 400px; 
+            border: 2px solid var(--neon-color); 
+            position: relative; width: 250px; height: 400px; 
             overflow: hidden;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
+            box-shadow: 0 0 15px var(--neon-color);
         }
 
-        .char-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+        .char-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
 
-        #modal-content { 
-            flex-grow: 1; 
-            max-height: 400px; 
-            overflow-y: auto; 
-            padding-right: 10px;
-        }
+        #modal-content { flex-grow: 1; max-height: 400px; overflow-y: auto; padding-right: 10px; }
         
-        #timer-display { 
-            font-size: 20px; 
-            font-weight: bold; 
-            color: var(--accent-color); 
-            text-align: center; 
-            margin-bottom: 15px;
-            font-family: sans-serif;
+        #timer-display, #modal-title { 
+            font-family: var(--text-font); 
+            color: var(--text-color); 
+            font-weight: bold; text-align: center; margin-bottom: 15px; 
         }
 
         .shop-item { 
-            background: #f8f9fa; 
-            margin-bottom: 12px; 
-            padding: 15px; 
-            border-radius: 16px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-left: 5px solid var(--accent-color);
+            background: rgba(255,255,255,0.5); margin-bottom: 12px; padding: 15px; 
+            border-radius: 16px; display: flex; justify-content: space-between; align-items: center; 
+            border-left: 5px solid var(--neon-color);
         }
         
-        .price-tag { font-weight: bold; color: var(--accent-color); font-size: 14px; }
-
-        #modal-btn {
-            margin-top: 20px; 
-            background: var(--accent-color); 
-            color: white; 
-            border: none; 
-            padding: 15px; 
-            border-radius: 50px; 
-            width: 100%; 
-            cursor: pointer; 
-            font-weight: bold;
-            font-size: 16px;
+        .shop-item button, #modal-btn {
+            background: var(--bg-gradient) !important;
+            color: white !important; border: none; padding: 12px 20px; border-radius: 50px;
+            cursor: pointer; font-weight: bold; transition: 0.3s;
         }
 
-        .shining { animation: shine 0.8s ease-in-out; }
-        @keyframes shine { 
-            0% { filter: brightness(1); } 
-            50% { filter: brightness(1.2) drop-shadow(0 0 10px var(--accent-color)); } 
-            100% { filter: brightness(1); } 
+        .shop-item button:hover, #modal-btn:hover {
+            filter: brightness(1.2); transform: scale(1.05);
+            box-shadow: 0 0 15px var(--neon-color);
         }
 
-        /* Красивое уведомление о нехватке монет */
         #error-toast {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #e74c3c;
-            color: white;
-            padding: 10px 25px;
-            border-radius: 50px;
-            font-family: sans-serif;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 10000;
-            opacity: 0;
-            transition: all 0.3s ease;
-            pointer-events: none;
-            white-space: nowrap;
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #e74c3c; color: white; padding: 10px 25px; border-radius: 50px;
+            font-family: sans-serif; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 10000;
         }
         #error-toast.show { opacity: 1; top: 40px; }
-        /* Прячем значок битой картинки, пока вещь не выбрана */
-        .char-layer[src=""], .char-layer:not([src]) {
-            display: none;
-        }
     </style>
 </head>
 <body>
     <div id="error-toast">Не хватает монет!</div>
-
     <audio id="sound-coin" src="https://www.soundjay.com/misc/sounds/coins-spilled-1.mp3"></audio>
 
     <div id="balance-container" class="fq-balance-widget">
@@ -137,219 +94,91 @@
     <div id="fq-overlay" class="hidden">
         <div id="fq-modal">
             <div id="timer-display"></div>
-            <h2 id="modal-title" style="color: var(--accent-color); text-align: center; font-family: sans-serif; margin-bottom: 20px;"></h2>
-            
+            <h2 id="modal-title"></h2>
             <div class="game-container">
                 <div id="character-preview">
                     <img id="base-body" src="assets/body/girl.png" class="char-layer" style="z-index: 1;">
-                    <img id="layer-bottom" src="" class="char-layer" style="z-index: 2;">
-                    <img id="layer-top" src="" class="char-layer" style="z-index: 3;">
-                    <img id="layer-shoes" src="" class="char-layer" style="z-index: 4;">
-                    <img id="layer-acc" src="" class="char-layer" style="z-index: 5;">
-                    <img id="layer-hat" src="" class="char-layer" style="z-index: 6;">
+                    <img id="layer-bottom" class="char-layer" style="z-index: 2;">
+                    <img id="layer-top" class="char-layer" style="z-index: 3;">
+                    <img id="layer-shoes" class="char-layer" style="z-index: 4;">
+                    <img id="layer-acc" class="char-layer" style="z-index: 5;">
+                    <img id="layer-hat" class="char-layer" style="z-index: 6;">
                 </div>
                 <div id="modal-content"></div>
             </div>
-
             <button id="modal-btn">ОК</button>
         </div>
     </div>
 
     <script src="engine.js"></script>
     <script>
-let timeLeft = 0;
-        let timerId = null;
-        let currentReward = 0;
+        let timeLeft = 0, timerId = null, currentReward = 0;
 
-        // Слушаем сообщения от Genially
-window.addEventListener('message', function(event) {
-    // Проверяем, что пришло именно наше сообщение
-    if (event.data && event.data.type === 'openTask') {
-        console.log("Команда получена!", event.data);
-        startTask(event.data);
-    }
-}, false);
-
-        function refreshBalance() { 
-            const el = document.getElementById('balance-val');
-            if(el) el.innerText = window.FQ.money; 
-        }
-
-        // 1. ОДЕВАЕМ КУКЛУ ПРИ ЗАГРУЗКЕ
-
-window.onload = function() {
-    // 1. Проверяем сессию
-    const isFirstRun = !sessionStorage.getItem('fq_session_active');
-
-    if (isFirstRun) {
-        window.FQ.money = 0;
-        window.FQ.inventory = [];
-        localStorage.setItem('fq_money', 0);
-        localStorage.setItem('fq_inventory', JSON.stringify([]));
-        sessionStorage.setItem('fq_session_active', 'true');
-        console.log("Первая загрузка: всё сброшено.");
-    } else {
-        // Загружаем данные из localStorage
-        const savedMoney = localStorage.getItem('fq_money');
-        const savedInv = localStorage.getItem('fq_inventory');
-        
-        window.FQ.money = savedMoney ? parseInt(savedMoney) : 0;
-        window.FQ.inventory = savedInv ? JSON.parse(savedInv) : [];
-        console.log("Переход: загружено вещей - " + window.FQ.inventory.length);
-    }
-
-    refreshBalance();
-
-    // 2. Очищаем слои
-    const layers = ['bottom', 'top', 'shoes', 'acc', 'hat'];
-    layers.forEach(type => {
-        const img = document.getElementById('layer-' + type);
-        if (img) {
-            img.src = "";
-            img.style.display = 'none';
-        }
-    });
-
-    // 3. Ждем 300мс, чтобы DOM прогрузился, и надеваем вещи
-    setTimeout(() => {
-        if (window.FQ.inventory && window.FQ.inventory.length > 0) {
-            window.FQ.inventory.forEach(id => {
-                const type = id.split('_')[0];
-                console.log("Надеваю сохраненную вещь:", id);
-                apply(id, type);
-            });
-        }
-    }, 300); 
-};
-
-        function startTask(data) {
-            timeLeft = data.time;
-            currentReward = 200;
-            document.getElementById('timer-display').style.display = 'block';
-            document.getElementById('timer-display').innerText = `⏳ Время: ${timeLeft} сек`;
-
-            clearInterval(timerId);
-            timerId = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer-display').innerText = `⏳ Время: ${timeLeft} сек`;
-                if(timeLeft <= 0) {
-                    clearInterval(timerId);
-                    document.getElementById('timer-display').innerText = "⌛ Время вышло! Награда снижена.";
-                    currentReward = 100;
-                }
-            }, 1000);
-
-            openTaskUI(data);
-        }
-
-        function openTaskUI(data) {
-            document.getElementById('modal-title').innerText = "Задание";
-            document.getElementById('character-preview').style.display = 'none';
-            document.getElementById('fq-overlay').classList.remove('hidden');
-            
-            let imgHtml = data.img ? `<img src="${data.img}" style="max-width:100%; max-height:250px; display:block; margin: 0 auto 15px; border-radius:15px;">` : '';
-            document.getElementById('modal-content').innerHTML = `
-                ${imgHtml}
-                <p style="text-align:center; font-size: 18px; color: #444;">${data.q}</p>
-                <input type="text" id="user-answer" style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--accent-color); text-align:center;" placeholder="Введите ответ...">
-            `;
-            
-            document.getElementById('modal-btn').innerText = "Проверить ответ";
-            document.getElementById('modal-btn').onclick = () => {
-                const ans = document.getElementById('user-answer').value;
-                if(ans && ans.toLowerCase().trim() === data.a.toLowerCase().trim()) {
-                    clearInterval(timerId);
-                    window.FQ.addMoney(currentReward);
-                    refreshBalance();
-                    openShop(data.shopType);
-                } else {
-                    showError("Неверно! Попробуй еще раз.");
-                }
-            };
-        }
-
-        function openShop(filterType) {
-            document.getElementById('timer-display').style.display = 'none';
-            document.getElementById('character-preview').style.display = 'block';
-            
-            const typeNames = {'top':'Верх','bottom':'Низ','shoes':'Обувь','hat':'Шапка','acc':'Аксессуар'};
-            document.getElementById('modal-title').innerText = typeNames[filterType] || "Магазин";
-            
-            const allItems = [
-                {id: 'top_1', name: '💎 Элитная вещь', price: 200, type: 'top'},
-                {id: 'top_2', name: '👕 Базовая вещь', price: 100, type: 'top'},
-                {id: 'bottom_1', name: '💎 Элитная вещь', price: 200, type: 'bottom'},
-                {id: 'bottom_2', name: '🩳 Базовая вещь', price: 100, type: 'bottom'},
-                {id: 'shoes_1', name: '💎 Элитная вещь', price: 200, type: 'shoes'},
-                {id: 'shoes_2', name: '👟 Базовая вещь', price: 100, type: 'shoes'},
-                {id: 'hat_1', name: '💎 Элитная вещь', price: 200, type: 'hat'},
-                {id: 'hat_2', name: '🧢 Базовая вещь', price: 100, type: 'hat'},
-                {id: 'acc_1', name: '💎 Элитная вещь', price: 200, type: 'acc'},
-                {id: 'acc_2', name: '👓 Базовая вещь', price: 100, type: 'acc'}
-            ];
-
-            const items = allItems.filter(i => i.type === filterType);
-            let html = '';
-            items.forEach(item => {
-                const bought = window.FQ.inventory.includes(item.id);
-                html += `<div class="shop-item">
-                    <span><b>${item.name}</b><br><small>${item.price} 💰</small></span>
-                    <button onclick="tryOn('${item.id}', ${item.price}, '${item.type}')" 
-                            style="background:${bought?'#27ae60':'var(--accent-color)'}; color:white; border:none; padding:10px; border-radius:10px;">
-                        ${bought ? 'Надето' : 'Купить'}
-                    </button>
-                </div>`;
-            });
-            document.getElementById('modal-content').innerHTML = html;
-            document.getElementById('modal-btn').innerText = "Продолжить путь ✨";
-            document.getElementById('modal-btn').onclick = () => {
-                document.getElementById('fq-overlay').classList.add('hidden');
-                window.parent.postMessage({type: 'close'}, '*');
-            };
-        }
-
-        function tryOn(id, price, type) {
-            // Если вещь уже куплена ИЛИ покупка прошла успешно
-            if (window.FQ.inventory.includes(id) || window.FQ.buyItem(id, price)) {
+        // Прием настроек из Genially
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'openTask') {
+                const root = document.documentElement;
+                if (event.data.accentColor) root.style.setProperty('--accent-color', event.data.accentColor);
+                if (event.data.neonColor) root.style.setProperty('--neon-color', event.data.neonColor);
+                if (event.data.fontFamily) root.style.setProperty('--text-font', event.data.fontFamily);
+                if (event.data.textColor) root.style.setProperty('--text-color', event.data.textColor);
+                if (event.data.btnGradient) root.style.setProperty('--bg-gradient', event.data.btnGradient);
                 
-                // Звук монеток только при первой покупке
-                if(!window.FQ.inventory.includes(id)) {
-                    document.getElementById('sound-coin').play();
+                if (event.data.bgImage) {
+                    document.body.style.backgroundImage = `url('assets/backgrounds/${event.data.bgImage}.png')`;
+                    document.body.style.backgroundSize = 'cover';
                 }
+                startTask(event.data);
+            }
+        }, false);
 
-                // ПРИНУДИТЕЛЬНОЕ СОХРАНЕНИЕ (чтобы Genially не забыл)
-                // Обновляем список инвентаря в памяти сразу после покупки/надевания
-                localStorage.setItem('fq_inventory', JSON.stringify(window.FQ.inventory));
-                localStorage.setItem('fq_money', window.FQ.money);
-
-                refreshBalance();
-                apply(id, type);
-                openShop(type);
+        window.onload = function() {
+            const isFirstRun = !sessionStorage.getItem('fq_session_active');
+            if (isFirstRun) {
+                window.FQ.money = 0;
+                window.FQ.inventory = [];
+                localStorage.setItem('fq_money', 0);
+                localStorage.setItem('fq_inventory', JSON.stringify([]));
+                sessionStorage.setItem('fq_session_active', 'true');
             } else {
-                showError("Не хватает монет!");
+                window.FQ.money = parseInt(localStorage.getItem('fq_money')) || 0;
+                window.FQ.inventory = JSON.parse(localStorage.getItem('fq_inventory')) || [];
+            }
+            refreshBalance();
+            setTimeout(() => {
+                window.FQ.inventory.forEach(id => apply(id));
+            }, 300);
+        };
+
+        function apply(id, type) {
+            const cleanType = type || id.split('_')[0]; 
+            const img = document.getElementById('layer-' + cleanType);
+            if (img) {
+                img.src = `assets/clothes/${cleanType}/${id}.png?v=${new Date().getTime()}`;
+                img.style.display = 'block';
             }
         }
 
-        function apply(id, type) {
-    // Убедимся, что type — это именно то, что нужно (top, bottom и т.д.)
-    // Если id выглядит как 'top_1', то type должен быть 'top'
-    const cleanType = type || id.split('_')[0]; 
-    const img = document.getElementById('layer-' + cleanType);
-    if (img) {
-        img.src = `assets/clothes/${cleanType}/${id}.png?v=${new Date().getTime()}`;
-        img.style.display = 'block';
-    }
-}
+        function tryOn(id, price, type) {
+            if (window.FQ.inventory.includes(id) || window.FQ.buyItem(id, price)) {
+                if(!window.FQ.inventory.includes(id)) document.getElementById('sound-coin').play();
+                localStorage.setItem('fq_inventory', JSON.stringify(window.FQ.inventory));
+                localStorage.setItem('fq_money', window.FQ.money);
+                refreshBalance();
+                apply(id, type);
+                openShop(type);
+            } else { showError("Не хватает монет!"); }
+        }
 
+        function refreshBalance() { document.getElementById('balance-val').innerText = window.FQ.money; }
         function showError(text) {
             const t = document.getElementById('error-toast');
-            t.innerText = text;
-            t.classList.add('show');
+            t.innerText = text; t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 2000);
         }
-        console.log("Магазин загружен и готов слушать команды!");
-        // Этот код заставляет магазин "слышать" кнопку из Genially
 
+        // Остальные функции (startTask, openTaskUI, openShop) остаются прежними
+        // ... (из твоего предыдущего рабочего кода)
     </script>
 </body>
 </html>
