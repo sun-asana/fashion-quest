@@ -48,7 +48,7 @@
 <body>
 
 <div class="settings-panel">
-    <div class="header-area"><h2>Editor v2.0</h2></div>
+    <div class="header-area"><h2>Editor v2.1 (Genially Pro)</h2></div>
 
     <div class="group">
         <label>Вопрос (поддерживает LaTeX)</label>
@@ -137,61 +137,94 @@
         reader.readAsDataURL(file);
     }
 
-function updatePreview() {
-    const neon = document.getElementById('neonColor').value;
-    const grad = document.getElementById('btnGradient').value;
-    const font = document.getElementById('fontFamily').value;
-    const bg = document.getElementById('bgImage').value;
+    function updatePreview() {
+        const neon = document.getElementById('neonColor').value;
+        const grad = document.getElementById('btnGradient').value;
+        const font = document.getElementById('fontFamily').value;
+        const bg = document.getElementById('bgImage').value;
 
-    document.documentElement.style.setProperty('--p-neon', neon);
-    document.documentElement.style.setProperty('--p-grad', grad);
+        document.documentElement.style.setProperty('--p-neon', neon);
+        document.documentElement.style.setProperty('--p-grad', grad);
+        
+        const startBtnMock = document.getElementById('genially-btn-mock');
+        startBtnMock.style.borderColor = neon;
+        startBtnMock.style.color = neon;
+        startBtnMock.style.background = `${neon}33`;
+
+        const modal = document.getElementById('mock-modal');
+        modal.style.fontFamily = font;
+        document.getElementById('p-question').innerText = document.getElementById('q').value;
+        if (window.MathJax) { MathJax.typeset(); }
+        document.querySelector('.mock-btn').style.background = grad;
+        
+        const bgPanel = document.getElementById('preview-bg');
+        bgPanel.style.backgroundImage = bg ? `url('assets/backgrounds/${bg}.png')` : "none";
+        bgPanel.style.opacity = bg ? "0.6" : "0";
+    }
+
+    function generateCode() {
+        const data = {
+            type: 'openTask',
+            q: document.getElementById('q').value,
+            a: document.getElementById('a').value,
+            img: uploadedImgBase64,
+            time: 30,
+            shopType: document.getElementById('shopType').value,
+            fontFamily: document.getElementById('fontFamily').value,
+            neonColor: document.getElementById('neonColor').value,
+            btnGradient: document.getElementById('btnGradient').value,
+            bgImage: document.getElementById('bgImage').value,
+            transparent: document.getElementById('bgImage').value === ""
+        };
+
+        const bgUrl = data.bgImage ? `https://raw.githubusercontent.com/sun-asana/fashion-quest/main/assets/backgrounds/${data.bgImage}.png` : "";
+        
+        const code = `<iframe id="fq-iframe" 
+    src="https://sun-asana.github.io/fashion-quest/index.html" 
+    style="width:100%; height:800px; border:none; background:transparent; position:relative; z-index:2;" 
+    allowtransparency="true">
+</iframe>
+
+<script>
+(function() {
+    const taskData = ${JSON.stringify(data)};
+    const ifr = document.getElementById('fq-iframe');
+    const bg = "${bgUrl}";
     
-    // Обновляем прозрачную кнопку в превью
-    const startBtnMock = document.getElementById('genially-btn-mock');
-    startBtnMock.style.borderColor = neon;
-    startBtnMock.style.color = neon;
-    startBtnMock.style.background = `${neon}33`; // 33 — это прозрачность 20% в HEX
+    function deepClean() {
+        let el = ifr;
+        while (el && el !== document.body) {
+            el.style.backgroundColor = 'transparent';
+            el.style.backgroundImage = 'none';
+            el.style.minHeight = '100vh';
+            if (bg && (el.classList.contains('genially-view-item') || el.classList.contains('genially-canvas'))) {
+                el.style.background = "url('" + bg + "') center center / cover no-repeat fixed";
+            }
+            el = el.parentElement;
+        }
+        if (bg) document.body.style.background = "url('" + bg + "') center center / cover no-repeat fixed";
+    }
 
-    const modal = document.getElementById('mock-modal');
-    modal.style.fontFamily = font;
-    document.getElementById('p-question').innerText = document.getElementById('q').value;
-    if (window.MathJax) { MathJax.typeset(); }
-    document.querySelector('.mock-btn').style.background = grad;
-    
-    const bgPanel = document.getElementById('preview-bg');
-    bgPanel.style.backgroundImage = bg ? `url('assets/backgrounds/${bg}.png')` : "none";
-    bgPanel.style.opacity = bg ? "0.6" : "0";
-}
-
-function generateCode() {
-    const data = {
-        type: 'openTask',
-        q: document.getElementById('q').value,
-        a: document.getElementById('a').value,
-        img: uploadedImgBase64,
-        time: 30,
-        shopType: document.getElementById('shopType').value,
-        fontFamily: document.getElementById('fontFamily').value,
-        neonColor: document.getElementById('neonColor').value,
-        btnGradient: document.getElementById('btnGradient').value,
-        bgImage: document.getElementById('bgImage').value,
-        transparent: document.getElementById('bgImage').value === ""
+    ifr.onload = function() {
+        deepClean();
+        setTimeout(() => {
+            ifr.contentWindow.postMessage(taskData, '*');
+        }, 600);
     };
+    
+    deepClean();
+    setTimeout(deepClean, 1500);
+    setTimeout(deepClean, 3000);
+})();
+<\/script>`;
 
-    // Создаем строку с данными для передачи через URL (Base64)
-    const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+        navigator.clipboard.writeText(code).then(() => {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        });
+    }
 
-    // ВАЖНО: Замени 'ТВОЙ_НИК' на свой логин GitHub в ссылке ниже!
-    const gameUrl = `https://sun-asana.github.io/fashion-quest/index.html?data=${encodedData}`;
-
-    const code = `<iframe src="${gameUrl}" style="width:100%; height:500px; border:none; background:transparent;" allowtransparency="true"></iframe>`;
-
-    navigator.clipboard.writeText(code).then(() => {
-        const toast = document.getElementById('toast');
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    });
-}
     const dz = document.getElementById('drop-zone');
     dz.ondragover = () => { dz.classList.add('hover'); return false; };
     dz.ondragleave = () => { dz.classList.remove('hover'); return false; };
