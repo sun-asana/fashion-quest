@@ -2,144 +2,144 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Fashion Quest - Ultimate Editor</title>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>Fashion Quest - Pro Editor with Preview</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; padding: 20px; line-height: 1.4; }
-        .panel { background: #1e293b; padding: 25px; border-radius: 15px; max-width: 700px; margin: 0 auto; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h1 { text-align: center; color: #38bdf8; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; }
-        h3 { color: #94a3b8; border-bottom: 1px solid #334155; padding-bottom: 5px; margin-top: 20px; font-size: 14px; text-transform: uppercase; }
+        :root { --p-neon: #00f2ff; --p-grad: linear-gradient(45deg, #00f2ff, #0066ff); }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        .group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-size: 13px; color: #cbd5e1; }
-        input, select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+        /* ЛЕВАЯ ПАНЕЛЬ (НАСТРОЙКИ) */
+        .settings-panel { width: 400px; padding: 20px; background: #1e293b; overflow-y: auto; border-right: 2px solid #334155; box-shadow: 10px 0 30px rgba(0,0,0,0.3); z-index: 10; }
+        h2 { color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; font-size: 18px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        h3 { font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 20px; }
         
-        .row { display: flex; gap: 15px; margin-bottom: 10px; }
-        .row > div { flex: 1; }
+        .group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 4px; font-size: 12px; color: #cbd5e1; }
+        input, select, textarea { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 13px; }
+        .row { display: flex; gap: 10px; }
         
-        .hint { font-size: 11px; color: #64748b; margin-top: 4px; }
+        /* ПРАВАЯ ПАНЕЛЬ (ПРЕДПРОСМОТР) */
+        .preview-panel { flex-grow: 1; position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
+        #preview-bg { position: absolute; width: 100%; height: 100%; background-size: cover; background-position: center; transition: 0.5s; }
         
-        button { width: 100%; padding: 18px; background: linear-gradient(45deg, #38bdf8, #818cf8); border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 16px; transition: 0.3s; }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4); }
-        
-        #copy-area { margin-top: 20px; background: #000; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 12px; word-break: break-all; display: none; border: 1px solid #38bdf8; }
+        /* КНОПКА ЗАПУСКА (КАК В GENIALLY) */
+        #start-trigger { position: absolute; top: 20px; left: 20px; padding: 10px 20px; background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #38bdf8; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        /* ОКНО ИГРЫ В ПРЕВЬЮ */
+        #mock-modal { 
+            width: 80%; max-width: 600px; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
+            border-radius: 20px; padding: 20px; border: 2px solid var(--p-neon);
+            box-shadow: 0 0 20px var(--p-neon); color: #333; position: relative;
+        }
+        .mock-btn { 
+            background: var(--p-grad); color: white; border: none; padding: 10px 20px; 
+            border-radius: 50px; font-weight: bold; width: 100%; margin-top: 15px;
+        }
+
+        #copy-btn { width: 100%; padding: 15px; background: #38bdf8; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="panel">
-        <h1>Fashion Quest Editor ✨</h1>
-        
-        <h3>📝 Контент задания</h3>
-        <div class="group">
-            <label>Вопрос (поддерживает LaTeX, например: \( \sqrt{x^2+y^2} \))</label>
-            <textarea id="q" rows="2" placeholder="Введите текст вопроса..."></textarea>
-        </div>
-        <div class="row">
-            <div class="group">
-                <label>Ссылка на картинку (URL)</label>
-                <input type="text" id="img" placeholder="https://...">
-            </div>
-            <div class="group">
-                <label>Правильный ответ</label>
-                <input type="text" id="a" placeholder="Ответ...">
-            </div>
-        </div>
 
-        <h3>⚙️ Механика</h3>
-        <div class="row">
-            <div class="group">
-                <label>Время (сек)</label>
-                <input type="number" id="time" value="30">
-            </div>
-            <div class="group">
-                <label>Категория в магазине</label>
-                <select id="shopType">
-                    <option value="top">Верх (Одежда)</option>
-                    <option value="bottom">Низ (Юбки/Брюки)</option>
-                    <option value="shoes">Обувь</option>
-                    <option value="hat">Головные уборы</option>
-                    <option value="acc">Аксессуары</option>
-                </select>
-            </div>
-        </div>
+<div class="settings-panel">
+    <h2>Fashion Quest Editor ✨</h2>
+    
+    <button id="start-trigger" onclick="alert('Это кнопка для Genially! Скопируйте код снизу и вставьте его туда.')">✨ Начать задание</button>
 
-        <h3>🎨 Дизайн и Неон</h3>
-        <div class="row">
-            <div class="group">
-                <label>Шрифт текста</label>
-                <select id="font">
-                    <option value="Arial, sans-serif">Стандартный</option>
-                    <option value="'Montserrat', sans-serif">Montserrat (Модный)</option>
-                    <option value="'Courier New', monospace">Retro</option>
-                    <option value="'Playfair Display', serif">Luxury</option>
-                </select>
-            </div>
-            <div class="group">
-                <label>Цвет текста</label>
-                <input type="color" id="textColor" value="#333333">
-            </div>
-        </div>
+    <h3>📝 Контент</h3>
+    <div class="group"><label>Вопрос</label><textarea id="q" oninput="updatePreview()">1+5</textarea></div>
+    <div class="group"><label>Ответ</label><input type="text" id="a" value="6"></div>
 
-        <div class="row">
-            <div class="group">
-                <label>Цвет неонового сияния</label>
-                <input type="color" id="neonColor" value="#00f2ff">
-            </div>
-            <div class="group">
-                <label>Градиент кнопок</label>
-                <select id="gradient">
-                    <option value="linear-gradient(45deg, #00f2ff, #0066ff)">Синий лед</option>
-                    <option value="linear-gradient(45deg, #ff00ff, #7000ff)">Розовый неон</option>
-                    <option value="linear-gradient(45deg, #ccff00, #009432)">Кислотный лайм</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="group">
-            <label>Фон игры (из GitHub assets/backgrounds/)</label>
-            <select id="bgImage">
-    <option value="">Без фона</option>
-    <option value="bg_space">Звездная пыль</option>
-                <option value="bg_cyber">Киберпанк Сити</option>
-                <option value="bg_watercolor">Акварель</option>
-            </select>
-            <label style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" id="transparent" style="width: auto;"> 
-                <span>Прозрачный фон (использовать фон из Genially)</span>
-            </label>
-        </div>
-
-        <button onclick="generateCode()">СКОПИРОВАТЬ КОД ДЛЯ GENIALLY</button>
-        <div id="copy-area"></div>
+    <h3>🎨 Дизайн</h3>
+    <div class="row">
+        <div class="group"><label>Неон</label><input type="color" id="neonColor" value="#00f2ff" oninput="updatePreview()"></div>
+        <div class="group"><label>Текст</label><input type="color" id="textColor" value="#333333" oninput="updatePreview()"></div>
+    </div>
+    
+    <div class="group">
+        <label>Градиент кнопок</label>
+        <select id="gradient" onchange="updatePreview()">
+            <option value="linear-gradient(45deg, #00f2ff, #0066ff)">Синий неон</option>
+            <option value="linear-gradient(45deg, #ff00ff, #7000ff)">Розовый неон</option>
+            <option value="linear-gradient(45deg, #ccff00, #009432)">Кислотный лайм</option>
+        </select>
     </div>
 
-    <script>
-        function generateCode() {
-            const data = {
-                type: 'openTask',
-                q: document.getElementById('q').value || 'Вопрос?',
-                a: document.getElementById('a').value || '',
-                img: document.getElementById('img').value,
-                time: parseInt(document.getElementById('time').value),
-                shopType: document.getElementById('shopType').value,
-                fontFamily: document.getElementById('font').value,
-                textColor: document.getElementById('textColor').value,
-                neonColor: document.getElementById('neonColor').value,
-                btnGradient: document.getElementById('gradient').value,
-                bgImage: document.getElementById('bgImage').value,
-                transparent: document.getElementById('transparent').checked
-            };
+    <div class="group">
+        <label>Фон</label>
+        <select id="bgImage" onchange="updatePreview()">
+            <option value="">Прозрачный (Genially)</option>
+            <option value="bg_space">Звездная пыль</option>
+            <option value="bg_cyber">Киберпанк</option>
+            <option value="bg_watercolor">Акварель</option>
+        </select>
+    </div>
 
-            const code = `window.parent.postMessage(${JSON.stringify(data)}, '*');`;
-            
-            navigator.clipboard.writeText(code).then(() => {
-                const area = document.getElementById('copy-area');
-                area.style.display = 'block';
-                area.innerText = "Код скопирован! Вставь его в Genially:\n\n" + code;
-                alert("Готово! Код в буфере обмена.");
-            });
+    <div class="group">
+        <label>Категория</label>
+        <select id="shopType"><option value="top">Верх</option><option value="bottom">Низ</option></select>
+    </div>
+
+    <button id="copy-btn" onclick="generateCode()">СКОПИРОВАТЬ КОД</button>
+</div>
+
+<div class="preview-panel">
+    <div id="preview-bg"></div>
+    <div id="mock-modal">
+        <div style="text-align: center; font-size: 10px; color: #666; margin-bottom: 10px;">ПРЕДПРОСМОТР</div>
+        <div id="p-question" style="text-align: center; font-size: 18px; font-weight: bold;">1+5</div>
+        <input type="text" placeholder="Ответ..." style="width: 100%; margin-top: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 8px; text-align: center;">
+        <button class="mock-btn">Проверить ответ</button>
+    </div>
+</div>
+
+<script>
+    function updatePreview() {
+        const neon = document.getElementById('neonColor').value;
+        const grad = document.getElementById('gradient').value;
+        const text = document.getElementById('textColor').value;
+        const bg = document.getElementById('bgImage').value;
+        const qText = document.getElementById('q').value;
+
+        // Применяем к превью
+        const modal = document.getElementById('mock-modal');
+        modal.style.borderColor = neon;
+        modal.style.boxShadow = `0 0 20px ${neon}`;
+        modal.style.color = text;
+        
+        document.getElementById('p-question').innerText = qText;
+        
+        const btn = document.querySelector('.mock-btn');
+        btn.style.background = grad;
+
+        const bgPanel = document.getElementById('preview-bg');
+        if(bg) {
+            bgPanel.style.backgroundImage = `url('assets/backgrounds/${bg}.png')`;
+            bgPanel.style.opacity = "1";
+        } else {
+            bgPanel.style.backgroundImage = "none";
+            bgPanel.style.backgroundColor = "#222";
         }
-    </script>
+    }
+
+    function generateCode() {
+        const data = {
+            type: 'openTask',
+            q: document.getElementById('q').value,
+            a: document.getElementById('a').value,
+            time: 30,
+            shopType: document.getElementById('shopType').value,
+            neonColor: document.getElementById('neonColor').value,
+            textColor: document.getElementById('textColor').value,
+            btnGradient: document.getElementById('gradient').value,
+            bgImage: document.getElementById('bgImage').value,
+            transparent: document.getElementById('bgImage').value === ""
+        };
+        const code = `window.parent.postMessage(${JSON.stringify(data)}, '*');`;
+        navigator.clipboard.writeText(code);
+        alert("Код скопирован!");
+    }
+    
+    updatePreview();
+</script>
 </body>
 </html>
