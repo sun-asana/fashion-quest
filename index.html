@@ -14,19 +14,25 @@
             --bg-gradient: linear-gradient(135deg, #4a69bd 0%, #10ac84 100%);
             --text-font: 'Arial', sans-serif;
             --text-color: #333333;
-            --bg-opacity: 1; 
+        }
+
+        /* Убираем любой белый фон на уровне страницы */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent !important;
+            background: transparent !important;
         }
 
         body {
-            margin: 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
-            background-color: transparent !important; 
-            background: transparent !important;
             transition: background 0.5s ease;
         }
 
@@ -38,7 +44,7 @@
             font-weight: bold;
             text-transform: uppercase;
             color: var(--neon-color);
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.4); /* Чуть темнее фон для читаемости */
             border: 3px solid var(--neon-color);
             border-radius: 50px;
             cursor: pointer;
@@ -60,7 +66,7 @@
             width: 95% !important;
             padding: 30px !important;
             border-radius: 24px !important;
-            background: rgba(255, 255, 255, 0.8) !important;
+            background: rgba(255, 255, 255, 0.9) !important;
             backdrop-filter: blur(12px);
             border: 2px solid var(--neon-color) !important;
             box-shadow: 0 0 25px var(--neon-color), inset 0 0 15px var(--neon-color) !important;
@@ -113,7 +119,7 @@
             <h2 id="modal-title"></h2>
             <div class="game-container">
                 <div id="character-preview">
-                    <img id="base-body" src="assets/body/girl.png" class="char-layer" style="z-index: 1;">
+                    <img id="base-body" src="assets/body/girl.png?v=1" class="char-layer" style="z-index: 1;">
                     <img id="layer-bottom" class="char-layer" style="z-index: 2;">
                     <img id="layer-top" class="char-layer" style="z-index: 3;">
                     <img id="layer-shoes" class="char-layer" style="z-index: 4;">
@@ -131,7 +137,9 @@
         let timeLeft = 0, timerId = null, currentReward = 0;
         let cachedData = null;
 
-        // Функция обработки входящих данных (общая для всех способов)
+        // ПУТЬ К ТВОЕМУ РЕПОЗИТОРИЮ (для стабильной загрузки в Genially)
+        const GITHUB_RAW = "https://raw.githubusercontent.com/sun-asana/fashion-quest/main/";
+
         function processTaskData(data) {
             if (!data || data.type !== 'openTask') return;
             
@@ -143,11 +151,12 @@
             if (data.fontFamily) root.style.setProperty('--text-font', data.fontFamily);
             if (data.btnGradient) root.style.setProperty('--bg-gradient', data.btnGradient);
             
+            // ОБНОВЛЕННЫЙ БЛОК ФОНА (с прозрачностью и абсолютным путем)
             if (data.transparent) {
-                document.body.style.backgroundImage = 'none';
+                document.body.style.background = 'transparent';
             } else if (data.bgImage) {
-                document.body.style.backgroundImage = `url('assets/backgrounds/${data.bgImage}.png')`;
-                document.body.style.backgroundSize = 'cover';
+                const bgUrl = `${GITHUB_RAW}assets/backgrounds/${data.bgImage}.png`;
+                document.body.style.background = `url('${bgUrl}') center/cover no-repeat fixed transparent`;
             }
 
             const startBtn = document.getElementById('start-task-btn');
@@ -160,11 +169,9 @@
             };
         }
 
-        // Слушаем сообщения (от скрипта)
         window.addEventListener('message', (event) => processTaskData(event.data), false);
 
         window.onload = function() {
-            // 1. Проверка данных в URL (от iframe)
             const urlParams = new URLSearchParams(window.location.search);
             const dataParam = urlParams.get('data');
             if (dataParam) {
@@ -174,7 +181,6 @@
                 } catch (e) { console.error("Ошибка URL данных:", e); }
             }
 
-            // 2. Инициализация баланса
             const isFirstRun = !sessionStorage.getItem('fq_session_active');
             if (isFirstRun) {
                 window.FQ.money = 0;
@@ -274,7 +280,8 @@
             const cleanType = type || id.split('_')[0]; 
             const img = document.getElementById('layer-' + cleanType);
             if (img) {
-                img.src = `assets/clothes/${cleanType}/${id}.png?v=${new Date().getTime()}`;
+                // Используем абсолютный путь для одежды
+                img.src = `${GITHUB_RAW}assets/clothes/${cleanType}/${id}.png?v=${new Date().getTime()}`;
                 img.style.display = 'block';
             }
         }
