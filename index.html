@@ -132,12 +132,12 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="engine.js"></script>
     <script>
         let timeLeft = 0, timerId = null, currentReward = 0;
         let cachedData = null;
 
-        // ПУТЬ К ТВОЕМУ РЕПОЗИТОРИЮ (для стабильной загрузки в Genially)
         const GITHUB_RAW = "https://raw.githubusercontent.com/sun-asana/fashion-quest/main/";
 
         function processTaskData(data) {
@@ -151,7 +151,6 @@
             if (data.fontFamily) root.style.setProperty('--text-font', data.fontFamily);
             if (data.btnGradient) root.style.setProperty('--bg-gradient', data.btnGradient);
             
-            // ОБНОВЛЕННЫЙ БЛОК ФОНА (с прозрачностью и абсолютным путем)
             if (data.transparent) {
                 document.body.style.background = 'transparent';
             } else if (data.bgImage) {
@@ -246,6 +245,7 @@
             document.getElementById('character-preview').style.display = 'block';
             const typeNames = {'top':'ВЕРХ','bottom':'НИЗ','shoes':'ОБУВЬ','hat':'ШАПКА','acc':'АКСЕССУАРЫ'};
             document.getElementById('modal-title').innerText = typeNames[filterType] || "МАГАЗИН";
+            
             const allItems = [
                 {id: 'top_1', name: '💎 Элитная вещь', price: 200, type: 'top'},
                 {id: 'top_2', name: '📦 Базовая вещь', price: 100, type: 'top'},
@@ -258,6 +258,7 @@
                 {id: 'acc_1', name: '💎 Элитная вещь', price: 200, type: 'acc'},
                 {id: 'acc_2', name: '📦 Базовая вещь', price: 100, type: 'acc'}
             ];
+            
             const items = allItems.filter(i => i.type === filterType);
             let html = '';
             items.forEach(item => {
@@ -270,17 +271,51 @@
                 </div>`;
             });
             document.getElementById('modal-content').innerHTML = html || '<p style="text-align:center">Пусто.</p>';
-            document.getElementById('modal-btn').innerText = "Продолжить путь ✨";
-            document.getElementById('modal-btn').onclick = () => {
-                document.getElementById('fq-overlay').classList.add('hidden');
-            };
+            
+            // ЛОГИКА КНОПКИ ЗАВЕРШЕНИЯ
+            const modalBtn = document.getElementById('modal-btn');
+            if (filterType === 'acc') {
+                modalBtn.innerText = "ЗАВЕРШИТЬ ОБРАЗ ✨";
+            } else {
+                modalBtn.innerText = "Продолжить путь ✨";
+            }
+            
+            modalBtn.onclick = () => handleFinishAction(filterType);
+        }
+
+        // НОВАЯ ФУНКЦИЯ ОБРАБОТКИ ФИНАЛА
+        function handleFinishAction(type) {
+            if (type === 'acc') {
+                launchFashionConfetti();
+                document.getElementById('modal-btn').innerText = "ОБРАЗ ГОТОВ! 😍";
+                setTimeout(() => {
+                    window.parent.postMessage('next', '*');
+                }, 4000);
+            } else {
+                window.parent.postMessage('next', '*');
+            }
+        }
+
+        // ФУНКЦИЯ КОНФЕТТИ
+        function launchFashionConfetti() {
+            var duration = 5 * 1000;
+            var animationEnd = Date.now() + duration;
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                confetti({
+                    particleCount: 40,
+                    spread: 90,
+                    origin: { y: 0.6 },
+                    colors: ['#00f2ff', '#ff00ff', '#ffffff']
+                });
+            }, 250);
         }
 
         function apply(id, type) {
             const cleanType = type || id.split('_')[0]; 
             const img = document.getElementById('layer-' + cleanType);
             if (img) {
-                // Используем абсолютный путь для одежды
                 img.src = `${GITHUB_RAW}assets/clothes/${cleanType}/${id}.png?v=${new Date().getTime()}`;
                 img.style.display = 'block';
             }
